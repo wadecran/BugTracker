@@ -1,0 +1,10 @@
+﻿@{
+	Layout = "~/Views/Shared/_AccountLayout.cshtml";
+	ViewBag.Title = "Bug Tracker | Confirm Email
+}
+
+			<div class="card-body login-card-body">
+				<h5>Thank you for confirming your email. Please @Html.ActionLink("Click here to Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</h5>
+				<!-- /.login-card-body -->
+			</div>
+		

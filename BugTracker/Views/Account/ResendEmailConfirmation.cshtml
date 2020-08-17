@@ -1,0 +1,36 @@
+﻿@model BugTracker.Models.ForgotPasswordViewModel
+@{
+	ViewBag.Title = "Forgot your password?";
+	Layout = "~/Views/Shared/_AccountLayout.cshtml";
+}
+
+<p class="login-box-msg">Enter your Email to receive a new Confirmation Link</p>
+@using (Html.BeginForm("ResendEmailConfirmation", "Account", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+{
+	@Html.AntiForgeryToken()
+
+	@Html.ValidationSummary("", new { @class = "text-danger" })
+
+	<div class="input-group mb-3">
+		@Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Email" })
+
+		<div class="input-group-append">
+			<div class="input-group-text">
+				<span class="fas fa-envelope"></span>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="row">
+		<!-- /.col -->
+		<div class="col-12">
+			<button type="submit" class="btn btn-primary btn-block">Email Link</button>
+		</div>
+		<!-- /.col -->
+	</div>
+
+}
+@section Scripts {
+	@Scripts.Render("~/bundles/jqueryval")
+}		

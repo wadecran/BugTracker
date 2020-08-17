@@ -1,0 +1,26 @@
+﻿@using BugTracker.Models
+@using BugTracker.Utilities
+@model IEnumerable<ApplicationUser>
+@{
+    ViewBag.Title = "ManageRoles";
+	var roleHelper = new UserRoleHelper();
+}
+
+<h2>ManageRoles</h2>
+@using (Html.BeginForm())
+{
+	@Html.AntiForgeryToken()
+<div class="row">
+	<div class="col-md-4">
+		@Html.ListBox("UserIds")
+	</div>
+	<div class="col-md-4">
+		@Html.DropDownList("RoleName", "--no role--")
+	</div>
+</div>
+<div class="row">
+	<div class="col">
+		<button type="submit" class="btn" style="width: 100%">Manage Role Assignment(s)</button>
+	</div>
+</div>
+}

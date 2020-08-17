@@ -1,0 +1,244 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	@using BugTracker.Utilities
+	@{
+		var errorMessage = "";
+		if (TempData["Errors"] != null)
+		{
+			errorMessage = TempData["Errors"].ToString();
+			
+		}
+	}
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>AdminLTE 3 | Starter</title>
+
+	<!-- Google Font: Source Sans Pro -->
+	<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+	<!-- Font Awesome Icons -->
+	<link href="~/Content/all.min.css" rel="stylesheet" />
+	<!-- Theme style -->
+	<link href="~/Content/adminlte.min.css" rel="stylesheet" />
+
+	<link href="~/Content/Style.css" rel="stylesheet" />
+
+	<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/v/dt/dt-1.10.21/datatables.min.css" />
+</head>
+<body class="hold-transition sidebar-mini">
+	<div class="wrapper">
+
+		<!-- Navbar -->
+		<nav class="main-header navbar navbar-expand navbar-white navbar-light">
+			<!-- Left navbar links -->
+
+			<!-- SEARCH FORM -->
+			<form class="form-inline ml-3">
+				<div class="input-group input-group-sm">
+					<input class="form-control form-control-navbar" type="search" placeholder="Search" aria-label="Search">
+					<div class="input-group-append">
+						<button class="btn btn-navbar" type="submit">
+							<i class="fas fa-search"></i>
+						</button>
+					</div>
+				</div>
+			</form>
+
+			<!-- Right navbar links -->
+			<ul class="navbar-nav ml-auto">
+				@Html.Partial("_NotificationDropdown")
+			</ul>
+		</nav>
+		<!-- /.navbar -->
+		<!-- Main Sidebar Container -->
+		<aside class="main-sidebar sidebar-dark-primary elevation-4">
+			<!-- Brand Logo -->
+			<a href="index3.html" class="brand-link">
+				<img src="~/Images/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+				<span class="brand-text font-weight-light">AdminLTE 3</span>
+			</a>
+
+			<!-- Sidebar -->
+			<div class="sidebar">
+				<!-- Sidebar user panel (optional) -->
+				@Html.Partial("_UserPanel")
+
+				<!-- Sidebar Menu -->
+				<nav class="mt-2">
+					<ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+						<!-- Add icons to the links using the .nav-icon class
+						with font-awesome or any other icon font library -->
+						<li class="nav-item has-treeview menu-open">
+							<a href="#" class="nav-link active">
+								<i class="nav-icon fas fa-tachometer-alt"></i>
+								<p>
+									Starter Pages
+									<i class="right fas fa-angle-left"></i>
+								</p>
+							</a>
+							<ul class="nav nav-treeview">
+								<li class="nav-item">
+									<a href="#" class="nav-link active">
+										<i class="far fa-circle nav-icon"></i>
+										<p>Active Page</p>
+									</a>
+								</li>
+								<li class="nav-item">
+									<a href="#" class="nav-link">
+										<i class="far fa-circle nav-icon"></i>
+										<p>Inactive Page</p>
+									</a>
+								</li>
+							</ul>
+						</li>
+						<li class="nav-item">
+							<a href="#" class="nav-link">
+								<i class="nav-icon fas fa-th"></i>
+								<p>
+									Simple Link
+									<span class="right badge badge-danger">New</span>
+								</p>
+							</a>
+						</li>
+						@if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+						{
+							<li class="nav-item">
+								<button type="button" class="btn btn-success btn-wide nav-btn" data-toggle="modal" data-target="#modal-success">
+									Create Project
+								</button>
+							</li>
+						}
+						<li class="nav-item">
+							@using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+							{
+								@Html.AntiForgeryToken()
+								<a href="javascript:document.getElementById('logoutForm').submit()" class="btn btn-danger btn-wide nav-btn">Log off</a>
+							}
+						</li>
+					</ul>
+				</nav>
+				<!-- /.sidebar-menu -->
+			</div>
+			<!-- /.sidebar -->
+		</aside>
+
+		<!-- Content Wrapper. Contains page content -->
+		<div class="content-wrapper">
+			@RenderBody()
+		</div>
+		<!-- /.content-wrapper -->
+		<!-- /.control-sidebar -->
+		<div class="modal fade" id="modal-success">
+			<div class="modal-dialog">
+				<div class="modal-content bg-success">
+					<div class="modal-header">
+						<h4 class="modal-title">Create Project</h4>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					@if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+					{
+						<div class="modal-body">
+							@{
+								UserRoleHelper roleHelp = new UserRoleHelper();
+								ViewBag.ProjectManagerId = new SelectList(roleHelp.UsersInRole("ProjectManager"), "Id", "Email");
+								ViewBag.DeveloperIds = new MultiSelectList(roleHelp.UsersInRole("Developer"), "Id", "Email");
+								ViewBag.SubmitterIds = new MultiSelectList(roleHelp.UsersInRole("Submitter"), "Id", "Email");
+							}
+							@using (Html.BeginForm("ProjectWizard", "Projects"))
+							{
+								@Html.AntiForgeryToken()
+								<div class="form-horizontal">
+									<div class="form-group">
+										@Html.Label("Name", htmlAttributes: new { @class = "control-label col-md-2" })
+										<div class="col-md-10">
+											@Html.Editor("Name", new { htmlAttributes = new { @class = "form-control" } })
+										</div>
+									</div>
+
+									<div class="form-group">
+										@Html.Label("Details", htmlAttributes: new { @class = "control-label col-md-2" })
+										<div class="col-md-10">
+											@Html.Editor("Details", new { htmlAttributes = new { @class = "form-control" } })
+										</div>
+									</div>
+
+									<div class="form-group">
+										@Html.Label("ProjectManagerId", "ProjectManagerId", htmlAttributes: new { @class = "control-label col-md-2" })
+										<div class="col-md-10">
+											@Html.DropDownList("ProjectManagerId", null, htmlAttributes: new { @class = "form-control" })
+										</div>
+									</div>
+
+									<div class="form-group">
+										@Html.Label("DeveloperIds", "DeveloperIds", htmlAttributes: new { @class = "control-label col-md-2" })
+										<div class="col-md-10">
+											@Html.ListBox("DeveloperIds", null, htmlAttributes: new { @class = "form-control" })
+										</div>
+									</div>
+
+									<div class="form-group">
+										@Html.Label("SubmitterIds", "SubmitterIds", htmlAttributes: new { @class = "control-label col-md-2" })
+										<div class="col-md-10">
+											@Html.ListBox("SubmitterIds", null, htmlAttributes: new { @class = "form-control" })
+										</div>
+									</div>
+
+									<div class="form-group">
+										<div class="col-md-offset-2 col-md-10">
+											<input type="submit" value="Create" class="btn btn-default" />
+										</div>
+									</div>
+								</div>
+							}
+						</div>
+					}
+				</div>
+				<!-- /.modal-content -->
+			</div>
+			<!-- /.modal-dialog -->
+		</div>
+		<!-- /.modal -->
+		<!-- Main Footer -->
+		<footer class="main-footer">
+			<!-- To the right -->
+			<div class="float-right d-none d-sm-inline">
+				Anything you want
+			</div>
+			<!-- Default to the left -->
+			<strong>Copyright &copy; 2014-2020 <a href="https://adminlte.io">AdminLTE.io</a>.</strong> All rights reserved.
+		</footer>
+	</div>
+	<!-- ./wrapper -->
+	<!-- REQUIRED SCRIPTS -->
+	<!-- jQuery -->
+	<script src="~/Scripts/jquery.min.js"></script>
+	<!-- Bootstrap 4 -->
+	<script src="~/Scripts/bootstrap.bundle.min.js"></script>
+	<!-- AdminLTE App -->
+	<script src="~/Scripts/adminlte.min.js"></script>
+
+	<script src="//cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+
+	<script type="text/javascript" src="//cdn.datatables.net/v/dt/dt-1.10.21/datatables.min.js"></script>
+	<script>
+
+		if ('@errorMessage' != "" ) {
+			var message = '@Html.Raw(errorMessage)';
+				Swal.fire({
+					icon: 'error',
+					title: 'Project Not Created',
+					html: message
+				})
+		}
+
+	</script>
+	<script>$('.table').DataTable();</script>
+
+
+	@RenderSection("Scripts", false)
+
+</body>
+</html>
