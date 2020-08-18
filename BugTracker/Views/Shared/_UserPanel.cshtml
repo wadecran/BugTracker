@@ -11,7 +11,7 @@
 		<img src="@userHelper.GetAvatarPath(User.Identity.GetUserId())" class="img-circle elevation-2" alt="User Image">
 	</div>
 	<div class="info">
-		<a href="#" class="d-block">@userHelper.GetFullName(User.Identity.GetUserId())</a>
+		<a href="@Url.Action("Manage", "Accounts")" class="d-block">@userHelper.GetFullName(User.Identity.GetUserId())</a>
 	</div>
 
 </div>

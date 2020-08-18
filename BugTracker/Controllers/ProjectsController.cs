@@ -20,7 +20,6 @@ namespace BugTracker.Controllers
         private UserRoleHelper roleHelp = new UserRoleHelper();
 
         // GET: Projects
-        [Authorize(Roles = "Admin")]
         public ActionResult Index()
         {
             return View(db.Projects.ToList());
