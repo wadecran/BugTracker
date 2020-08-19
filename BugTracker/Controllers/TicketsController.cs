@@ -19,6 +19,7 @@ namespace BugTracker.Controllers
         private ProjectHelper projHelp = new ProjectHelper();
         private UserRoleHelper roleHelp = new UserRoleHelper();
         private TicketHelper ticketHelper = new TicketHelper();
+        private NotificationHelper noteHelper = new NotificationHelper();
         // GET: Tickets
         public ActionResult Index()
         {
@@ -163,7 +164,7 @@ namespace BugTracker.Controllers
 
                 var newTicket = db.Tickets.AsNoTracking().FirstOrDefault(t => t.Id == ticket.Id);
 
-                ticketHelper.ManageTicketNotifications(oldTicket, newTicket);
+                noteHelper.ManageTicketNotifications(oldTicket, newTicket);
 
                 return RedirectToAction("Index");
             }

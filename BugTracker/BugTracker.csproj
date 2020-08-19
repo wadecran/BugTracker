@@ -186,7 +186,9 @@
     </Compile>
     <Compile Include="Models\EmailModel.cs" />
     <Compile Include="Utilities\FileHelper.cs" />
+    <Compile Include="Utilities\HistoryHelper.cs" />
     <Compile Include="Utilities\ImageUploadValidator.cs" />
+    <Compile Include="Utilities\NotificationHelper.cs" />
     <Compile Include="Utilities\ProjectHelper.cs" />
     <Compile Include="Utilities\Slugger.cs" />
     <Compile Include="Utilities\StringUtilities.cs" />

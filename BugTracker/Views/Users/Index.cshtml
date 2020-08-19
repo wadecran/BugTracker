@@ -26,10 +26,12 @@
 			<td>
 				@Html.DisplayFor(modelItem => user.Email)
 			</td>
+			@if (User.IsInRole("Admin"))
+				{
 			<td>
 				@Html.ActionLink("Manage Role", "ManageUserRole", new { id = user.Id })
 			</td>
-
+			}
 		</tr>
 	}
 

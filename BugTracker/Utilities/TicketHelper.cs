@@ -12,66 +12,7 @@ namespace BugTracker.Utilities
         private UserRoleHelper roleHelp = new UserRoleHelper();
         private ApplicationDbContext db = new ApplicationDbContext();
 
-        public void ManageTicketNotifications(Ticket oldTicket, Ticket newTicket)
-        {
-            if (oldTicket.DeveloperId != newTicket.DeveloperId)
-            {
-                if (newTicket.DeveloperId != null)
-                {
-                    var newNotification = new TicketNotification()
-                    {
-                        TicketId = newTicket.Id,
-                        UserId = newTicket.DeveloperId,
-                        Created = DateTime.Now,
-                        Subject = $"You have been assigned Ticket Id: {newTicket.Id}",
-                        Body = $"Hello {newTicket.Developer.FullName}, you have been assigned to Ticket Id {newTicket.Id} titled '{newTicket.Issue}' on Project '{newTicket.Project}'"
-                    };
-
-                    db.TicketNotifications.Add(newNotification);
-                    db.SaveChanges();
-                }
-                if (oldTicket.DeveloperId != null && newTicket.DeveloperId != null)
-                {
-                    var newAssignmentNotification = new TicketNotification()
-                    {
-                        TicketId = newTicket.Id,
-                        UserId = newTicket.DeveloperId,
-                        Created = DateTime.Now,
-                        Subject = $"You have been assigned Ticket Id: {newTicket.Id}",
-                        Body = $"Hello {newTicket.Developer.FullName}, you have been assigned to Ticket Id {newTicket.Id} titled '{newTicket.Issue}' on Project '{newTicket.Project}'"
-                    };
-                    db.TicketNotifications.Add(newAssignmentNotification);
-
-                    var newUnassignmentNotification = new TicketNotification()
-                    {
-                        TicketId = oldTicket.Id,
-                        UserId = oldTicket.DeveloperId,
-                        Created = DateTime.Now,
-                        Subject = $"You have been unassigned from Ticket Id: {newTicket.Id}",
-                        Body = $"Hello {oldTicket.Developer.FullName}, you have been unassigned from Ticket Id {oldTicket.Id} titled '{oldTicket.Issue}' on Project '{oldTicket.Project}'"
-                    };
-                    db.TicketNotifications.Add(newUnassignmentNotification);
-                    db.SaveChanges();
-                }
-                if (oldTicket.DeveloperId != null)
-                {
-                    var newUnassignmentNotification = new TicketNotification()
-                    {
-                        TicketId = oldTicket.Id,
-                        UserId = oldTicket.DeveloperId,
-                        Created = DateTime.Now,
-                        Subject = $"You have been unassigned from Ticket Id: {newTicket.Id}",
-                        Body = $"Hello {oldTicket.Developer.FullName}, you have been unassigned from Ticket Id {oldTicket.Id} titled '{oldTicket.Issue}' on Project '{oldTicket.Project}'"
-                    };
-                    db.TicketNotifications.Add(newUnassignmentNotification);
-                    db.SaveChanges();
-                }
-
-            }
-            //Unassignments
-
-            //Reassignments
-        }
+        
 
         public bool CanEditTicket(int ticketId)
         {

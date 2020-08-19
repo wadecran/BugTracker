@@ -77,6 +77,21 @@ namespace BugTracker.Migrations
                 userManager.AddToRoles(userId, "ProjectManager");
             }
 
+            if (!context.Users.Any(u => u.Email == "ProjectManager2@mail.com"))
+            {
+                userManager.Create(new ApplicationUser
+                {
+                    FirstName = "Project",
+                    LastName = "Manager2",
+                    Email = "ProjectManager2@mail.com",
+                    UserName = "ProjectManager2@mail.com",
+
+
+                }, "OpenMe123");
+                var userId = userManager.FindByEmail("ProjectManager2@mail.com").Id;
+                userManager.AddToRoles(userId, "ProjectManager");
+            }
+
             if (!context.Users.Any(u => u.Email == "Developer@mail.com"))
             {
                 userManager.Create(new ApplicationUser
@@ -89,6 +104,21 @@ namespace BugTracker.Migrations
 
                 }, "OpenMe123");
                 var userId = userManager.FindByEmail("Developer@mail.com").Id;
+                userManager.AddToRoles(userId, "Developer");
+            }
+
+            if (!context.Users.Any(u => u.Email == "Developer2@mail.com"))
+            {
+                userManager.Create(new ApplicationUser
+                {
+                    FirstName = "Dev",
+                    LastName = "Eloper",
+                    Email = "Developer2@mail.com",
+                    UserName = "Developer2@mail.com",
+
+
+                }, "OpenMe123");
+                var userId = userManager.FindByEmail("Developer2@mail.com").Id;
                 userManager.AddToRoles(userId, "Developer");
             }
 
@@ -106,6 +136,22 @@ namespace BugTracker.Migrations
                 var userId = userManager.FindByEmail("Submitter@mail.com").Id;
                 userManager.AddToRoles(userId, "Submitter");
             }
+
+            if (!context.Users.Any(u => u.Email == "Submitter2@mail.com"))
+            {
+                userManager.Create(new ApplicationUser
+                {
+                    FirstName = "Sub",
+                    LastName = "Mitter",
+                    Email = "Submitter2@mail.com",
+                    UserName = "Submitter2@mail.com",
+
+
+                }, "OpenMe123");
+                var userId = userManager.FindByEmail("Submitter2@mail.com").Id;
+                userManager.AddToRoles(userId, "Submitter");
+            }
+
             context.SaveChanges();
             #region TicketType Seed
             context.TicketTypes.AddOrUpdate(

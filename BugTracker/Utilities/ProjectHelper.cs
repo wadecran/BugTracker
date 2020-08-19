@@ -27,7 +27,7 @@ namespace BugTracker.Utilities
             }
         }
 
-        public void RemoveUserToProject(string userId, int projectId)
+        public void RemoveUseFromoProject(string userId, int projectId)
         {
             Project project = db.Projects.Find(projectId);
             ApplicationUser user = db.Users.Find(userId);
