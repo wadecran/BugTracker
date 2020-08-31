@@ -1,0 +1,429 @@
+﻿@using BugTracker.Utilities
+@using BugTracker.ViewModels
+@model UserDashboardVM
+@{
+	ViewBag.Title = "UserDashboard";
+	RoleHelper roleHelper = new RoleHelper();
+	TicketHelper ticketHelper = new TicketHelper();
+}
+
+
+
+<div class="content">
+	<br />
+	<br />
+	<div class="row">
+		<div class="col">
+			<!-- Widget: user widget style 1 -->
+			<div class="card card-widget widget-user">
+				<!-- Add the bg color to the header using any of the bg-* classes -->
+				<div class="widget-user-header bg-info">
+					<h3 class="widget-user-username">@Model.User.FullName</h3>
+					<h5 class="widget-user-desc">@roleHelper.ListUserRoles(Model.User.Id).FirstOrDefault()</h5>
+				</div>
+				<div class="widget-user-image">
+					<img class="img-circle elevation-2" src="@Model.User.AvatarPath" alt="User Avatar">
+				</div>
+				<div class="card-footer ">
+					<div class="row mb-3">
+						<div class="col">
+							<div class="description-block border-right">
+								<h5 class="description-header">@Model.User.Projects.Count</h5>
+								<span class="description-text">Projects</span>
+							</div>
+							<!-- /.description-block -->
+						</div>
+						<!-- /.col -->
+						<div class="col">
+							<div class="description-block">
+								<h5 class="description-header">@ticketHelper.ListUsersTickets(Model.User.Id).Count</h5>
+								<span class="description-text">Tickets</span>
+							</div>
+							<!-- /.description-block -->
+						</div>
+						<!-- /.col -->
+					</div>
+					<!-- /.row -->
+				</div>
+			</div>
+			<!-- /.widget-user -->
+		</div>
+		@if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+		{
+			<div class="col-4">
+				<a class="custom-card" data-toggle="modal" data-target="#modal-assignproject">
+					<div class="info-box">
+						<span class="info-box-icon bg-success"><i class="fas fa-user-plus"></i></span>
+
+						<div class="info-box-content">
+							<span class="info-box-text">Manage Projects</span>
+						</div>
+						<!-- /.info-box-content -->
+					</div>
+				</a>
+				<!-- /.info-box -->
+
+				@if (roleHelper.ListUserRoles(Model.User.Id).FirstOrDefault() == "Developer" || User.IsInRole("Admin"))
+				{
+					<div class="row">
+						<div class="col">
+							<a class="custom-card" data-toggle="modal" data-target="#modal-assignticket">
+								<div class="info-box">
+									<span class="info-box-icon bg-danger"><i class="fas fa-ticket-alt"></i></span>
+
+									<div class="info-box-content">
+										<span class="info-box-text">Assign Ticket</span>
+									</div>
+									<!-- /.info-box-content -->
+								</div>
+							</a>
+						</div>
+					</div>
+				}
+				@if (User.IsInRole("Admin"))
+				{
+					<div class="row">
+						<div class="col">
+							<a class="custom-card" data-toggle="modal" data-target="#modal-managerole">
+								<div class="info-box">
+									<span class="info-box-icon bg-warning"><i class="fas fa-user-tag"></i></span>
+
+									<div class="info-box-content">
+										<span class="info-box-text">Assign Role</span>
+									</div>
+									<!-- /.info-box-content -->
+								</div>
+							</a>
+						</div>
+					</div>
+				}
+				<!-- /.info-box -->
+			</div>
+		}
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card">
+				<div class="card-header">
+					<h5 class="card-title">Projects</h5>
+
+					<div class="card-tools">
+						<button type="button" class="btn btn-tool" data-card-widget="collapse">
+							<i class="fas fa-minus"></i>
+						</button>
+					</div>
+				</div>
+				<!-- /.card-header -->
+				<div class="card-body">
+					@if (Model.User.Projects.Count < 1)
+					{
+						<p class="text-center">User is not assigned to any Projects.</p>
+					}
+					else
+					{
+						<table class="table">
+							<thead>
+								<tr>
+									<th>
+										Name
+									</th>
+									<th>
+										Details
+									</th>
+									<th>
+										Created
+									</th>
+									<th>
+										Archived?
+									</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in Model.User.Projects)
+								{
+									<tr>
+										<td>
+											@Html.DisplayFor(modelItem => item.Name)
+										</td>
+										<td>
+											@Html.DisplayFor(modelItem => item.Details)
+										</td>
+										<td>
+											@Html.DisplayFor(modelItem => item.Created)
+										</td>
+										<td>
+											@Html.DisplayFor(modelItem => item.IsArchived)
+										</td>
+										<td>
+											@if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+											{
+												@Html.ActionLink("Edit", "Edit", "Projects", new { id = item.Id }, null)<span> |</span>
+											}
+											@Html.ActionLink("Details", "Dashboard", "Projects", new { id = item.Id }, null)
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					}
+					<!-- /.row -->
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card">
+				<div class="card-header">
+					<h5 class="card-title">Tickets</h5>
+
+					<div class="card-tools">
+						<button type="button" class="btn btn-tool" data-card-widget="collapse">
+							<i class="fas fa-minus"></i>
+						</button>
+					</div>
+				</div>
+				<!-- /.card-header -->
+				<div class="card-body">
+					@if (ticketHelper.ListUsersTickets(Model.User.Id).Count < 1)
+					{
+						<p class="text-center">User is not assigned to any Tickets</p>
+					}
+					else
+					{
+						<table class="table">
+							<thead>
+								<tr>
+									<th>
+										Project
+									</th>
+									<th>
+										Priority
+									</th>
+									<th>
+										Status
+									</th>
+									<th>
+										Type
+									</th>
+									<th>
+										Submitter
+									</th>
+									<th>
+										Developer
+									</th>
+									<th>
+										Issue
+									</th>
+									<th>
+										Created
+									</th>
+									<th>
+										Updated
+									</th>
+									<th>
+										Resolved?
+									</th>
+									<th>
+										Archived?
+									</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach (var item in ticketHelper.ListUsersTickets(Model.User.Id))
+								{
+									<tr>
+										<td>
+											@Html.DisplayFor(modelItem => item.Project.Name)
+										</td>
+										<td>
+											@Html.DisplayFor(modelItem => item.TicketPriority.Name)
+										</td>
+										<td>
+											@Html.DisplayFor(modelItem => item.TicketStatus.Name)
+										</td>
+										<td>
+											@Html.DisplayFor(modelItem => item.TicketType.Name)
+										</td>
+										<td>
+											@Html.DisplayFor(modelItem => item.Submitter.FullName)
+										</td>
+										<td>
+											@if (item.DeveloperId != null)
+											{
+												@Html.DisplayFor(modelItem => item.Developer.FullName)
+											}
+											else
+											{
+												<span>No Developer Assigned</span>
+											}
+										</td>
+										<td>
+											@Html.DisplayFor(modelItem => item.Issue)
+										</td>
+										<td>
+											@Html.DisplayFor(modelItem => item.Created)
+										</td>
+										<td>
+											@Html.DisplayFor(modelItem => item.Updated)
+										</td>
+										<td>
+											@Html.DisplayFor(modelItem => item.IsResolved)
+										</td>
+										<td>
+											@Html.DisplayFor(modelItem => item.IsArchived)
+										</td>
+										<td>
+											@Html.ActionLink("Details", "Details", "Tickets", new { id = item.Id }, null)
+										</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					}
+					<!-- /.row -->
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+@if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+{
+	<div class="modal fade" id="modal-assignproject">
+		<div class="modal-dialog">
+			<div class="modal-content bg-success">
+				<div class="modal-header">
+					<h4 class="modal-title">Manage @Model.User.FirstName's Projects</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+
+				<div class="modal-body">
+					@{
+						ViewBag.AddProjectIds = new MultiSelectList(Model.NotUserProjects, "Id", "Name");
+						ViewBag.RemoveProjectIds = new MultiSelectList(Model.User.Projects, "Id", "Name");
+					}
+
+					@using (Html.BeginForm("ManageUserProjects", "Assignments", new { userId = Model.User.Id }))
+					{
+						@Html.AntiForgeryToken()
+
+						<div class="row">
+							<div class="col-lg-6">
+								<h4>Add To Projects</h4>
+								@Html.ListBox("AddProjectIds", null, htmlAttributes: new { @class = "form-control" })
+							</div>
+							<div class="col-lg-6">
+								<h4>Remove From Projects</h4>
+								@Html.ListBox("RemoveProjectIds", null, htmlAttributes: new { @class = "form-control" })
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-12 mt-2">
+								<button type="submit" class="btn btn-primary btn-Wide">Assign Users</button>
+							</div>
+						</div>
+					}
+
+
+
+				</div>
+			</div>
+		</div>
+	</div>
+}
+@if (roleHelper.ListUserRoles(Model.User.Id).FirstOrDefault() == "Developer" || User.IsInRole("Admin"))
+{
+	<div class="modal fade" id="modal-assignticket">
+		<div class="modal-dialog">
+			<div class="modal-content bg-danger">
+				<div class="modal-header">
+					<h4 class="modal-title">Manage @Model.User.FirstName's Tickets</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+
+				<div class="modal-body">
+					@{
+						ViewBag.AddTicketIds = new MultiSelectList(Model.NotUserTickets.Where(t => t.DeveloperId == null), "Id", "Issue");
+						ViewBag.RemoveTicketIds = new MultiSelectList(ticketHelper.ListUsersTickets(Model.User.Id), "Id", "Issue");
+					}
+
+					@using (Html.BeginForm("ManageUserTickets", "Assignments", new { userId = Model.User.Id }))
+					{
+						@Html.AntiForgeryToken()
+
+						<div class="row">
+							<div class="col-lg-6">
+								<h4>Add To Tickets</h4>
+								@Html.ListBox("AddTicketIds", null, htmlAttributes: new { @class = "form-control" })
+							</div>
+							<div class="col-lg-6">
+								<h4>Remove From Tickets</h4>
+								@Html.ListBox("RemoveTicketIds", null, htmlAttributes: new { @class = "form-control" })
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-12 mt-2">
+								<button type="submit" class="btn btn-primary btn-Wide">Assign Users</button>
+							</div>
+						</div>
+					}
+
+
+
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+@if (User.IsInRole("Admin"))
+{
+	<div class="modal fade" id="modal-managerole">
+		<div class="modal-dialog">
+			<div class="modal-content bg-danger">
+				<div class="modal-header">
+					<h4 class="modal-title">Change @Model.User.FirstName's Role</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+
+				<div class="modal-body">
+					@{
+						ViewBag.RoleName = new SelectList(roleHelper.ListRoles());
+
+					}
+
+					@using (Html.BeginForm("ManageRoles", "Assignments", new { userId = Model.User.Id }))
+					{
+						@Html.AntiForgeryToken()
+
+						<div class="row">
+							<div class="col-lg-6">
+								<h4>Select a Role</h4>
+								@Html.DropDownList("RoleName", null, htmlAttributes: new { @class = "form-control" })
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-12 mt-2">
+								<button type="submit" class="btn btn-primary btn-Wide">Assign Users</button>
+							</div>
+						</div>
+					}
+
+
+
+				</div>
+			</div>
+		</div>
+	</div>
+}

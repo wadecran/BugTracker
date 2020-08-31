@@ -8,3 +8,14 @@ margin-bottom: 3px;
 .custom-file-label {
 width: 100%
 }
+
+#form {
+display: block;
+margin-top:0em;
+}
+
+a.custom-card,
+a.custom-card:hover {
+	color: inherit;
+	cursor: pointer;
+}

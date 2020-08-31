@@ -3,6 +3,7 @@ using BugTracker.Utilities;
 using Microsoft.AspNet.Identity;
 using System;
 using System.Collections.Generic;
+using System.Data.OleDb;
 using System.Drawing;
 using System.Linq;
 using System.Web;
@@ -15,8 +16,9 @@ namespace BugTracker.Controllers
 
     {
         private ApplicationDbContext db = new ApplicationDbContext();
-        private UserRoleHelper rolesHelper = new UserRoleHelper();
+        private RoleHelper rolesHelper = new RoleHelper();
         private ProjectHelper projHelper = new ProjectHelper();
+        private TicketHelper ticketHelper = new TicketHelper();
 
         #region Role Assignments
         // GET: Assignments
@@ -30,13 +32,8 @@ namespace BugTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult ManageRoles(List<string> userIds, string roleName)
+        public ActionResult ManageRoles(string userId, string roleName)
         {
-            if (userIds == null)
-                return RedirectToAction("RoleIndex");
-
-            foreach (var userId in userIds)
-            {
                 foreach (var role in rolesHelper.ListUserRoles(userId).ToList())
                 {
                     rolesHelper.RemoveUserFromRole(userId, role);
@@ -46,10 +43,8 @@ namespace BugTracker.Controllers
                 {
                     rolesHelper.AddUserToRole(userId, roleName);
                 }
-            }
 
-
-            return RedirectToAction("ManageRoles");
+            return Redirect(Request.UrlReferrer.ToString());
         }
 
         public ActionResult ManageUserRoles()
@@ -59,43 +54,106 @@ namespace BugTracker.Controllers
         #endregion
 
         #region Project Assignments
-        public ActionResult ManageProjectUsers()
-        {
-            ViewBag.UserIds = new MultiSelectList(db.Users, "Id", "Email");
-            if (User.IsInRole("Admin"))
-            {
-                ViewBag.ProjectIds = new MultiSelectList(db.Projects, "Id", "Name");
-            }
-            else
-            {
-                ViewBag.ProjectIds = new MultiSelectList(projHelper.ListUserProjects(User.Identity.GetUserId()), "Id", "Name");
-            }
-
-            return View(db.Users);
-        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult ManageProjectUsers(List<string> userIds, List<int> projectIds)
+        public ActionResult ManageUserProjects(string userId, List<int> addProjectIds, List<int> removeProjectIds)
         {
-            //Case 1: No Users and no projects
-            if (userIds == null || projectIds == null)
+            if (addProjectIds != null)
             {
-                return RedirectToAction("ManageProjectUsers");
-            }
-
-            foreach (var userId in userIds)
-            {
-                foreach (var projectId in projectIds)
+                foreach (var projectId in addProjectIds)
                 {
                     projHelper.AddUserToProject(userId, projectId);
                 }
             }
+            if (removeProjectIds != null)
+            {
+                foreach (var projectId in removeProjectIds)
+                {
+                    projHelper.RemoveUserFromProject(userId, projectId);
+                }
+            }
 
+            return Redirect(Request.UrlReferrer.ToString());
+        }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ManageProjectDevs(List<string> devIds, int projectId)
+        {
 
+            foreach (var userId in devIds)
+            {
+                projHelper.AddUserToProject(userId, projectId);
+            }
 
-            return RedirectToAction("ManageProjectUsers");
+            return Redirect(Request.UrlReferrer.ToString());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ManageProjectSubs(List<string> subIds, int projectId)
+        {
+
+            foreach (var userId in subIds)
+            {
+                projHelper.AddUserToProject(userId, projectId);
+            }
+
+            return Redirect(Request.UrlReferrer.ToString());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ManageProjectManager(string managerId, int projectId)
+        {
+            var oldManager = projHelper.ListProjectUsersInRole(projectId, "ProjectManager");
+
+            foreach (var manager in oldManager)
+            {
+                    projHelper.RemoveUserFromProject(manager.Id, projectId);
+            }
+
+            projHelper.AddUserToProject(managerId, projectId);
+            db.SaveChanges();
+
+            return Redirect(Request.UrlReferrer.ToString());
+        }
+        #endregion
+
+        #region Ticket Assignments
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ManageUserTickets(string userId, List<int> addTicketIds, List<int> removeTicketIds)
+        {
+            if (addTicketIds != null)
+            {
+                foreach (var ticketId in addTicketIds)
+                {
+                    ticketHelper.AssignTicket(userId, ticketId);
+                }
+            }
+
+            if (removeTicketIds != null)
+            {
+                foreach (var ticketId in removeTicketIds)
+                {
+                    ticketHelper.UnAssignTicket(ticketId);
+                }
+            }
+
+            return Redirect(Request.UrlReferrer.ToString());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ManageTicketUser(string userId, int ticketId)
+        {
+            if (userId != null)
+            {
+                ticketHelper.AssignTicket(userId, ticketId);
+            }
+            return Redirect(Request.UrlReferrer.ToString());
         }
         #endregion
     }

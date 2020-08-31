@@ -25,7 +25,7 @@ namespace BugTracker.Models
 
         public DateTime? Created { get; set; }
 
-        public bool? IsArchived { get; set; }
+        public bool IsArchived { get; set; }
         #endregion
 
         #region Constructor

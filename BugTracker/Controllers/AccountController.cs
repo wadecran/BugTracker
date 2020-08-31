@@ -14,6 +14,7 @@ using System.Net.Mail;
 using System.Web.Configuration;
 using System.IO;
 using BugTracker.Utilities;
+using System.EnterpriseServices;
 
 namespace BugTracker.Controllers
 {
@@ -23,6 +24,7 @@ namespace BugTracker.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        private ApplicationDbContext db = new ApplicationDbContext();
 
         public AccountController()
         {
@@ -56,6 +58,22 @@ namespace BugTracker.Controllers
             {
                 _userManager = value;
             }
+        }
+
+        public ActionResult UserDashboard(string id)
+        {
+            ProjectHelper projectHelper = new ProjectHelper();
+            TicketHelper ticketHelper = new TicketHelper();
+
+            var UserDashboard = new UserDashboardVM()
+            {
+                User = db.Users.Find(id),
+                NotUserProjects = projectHelper.ListNotUserProjects(id),
+                NotUserTickets = ticketHelper.ListNotUserTickets(id)
+
+
+            };
+            return View(UserDashboard);
         }
 
         //
@@ -93,7 +111,33 @@ namespace BugTracker.Controllers
                 case SignInStatus.Failure:
                 default:
                     ModelState.AddModelError("", "Invalid login attempt.");
-                    return View("Index", "Home", model);
+                    return View("Login", "Account", model);
+            }
+        }
+
+        [AllowAnonymous]
+        public ActionResult DemoLogin()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DemoLogin(string emailKey, string passwordKey, string returnUrl)
+        {
+            var email = WebConfigurationManager.AppSettings[emailKey];
+            var password = WebConfigurationManager.AppSettings[passwordKey];
+
+            var result = await SignInManager.PasswordSignInAsync(email, password, false, shouldLockout: false);
+            switch (result)
+            {
+                case SignInStatus.Success:
+                    return RedirectToLocal(returnUrl);
+                case SignInStatus.Failure:
+                default:
+                    ModelState.AddModelError("", "Invalid login attempt.");
+                    return View();
             }
         }
 
@@ -550,7 +594,7 @@ namespace BugTracker.Controllers
             {
                 return Redirect(returnUrl);
             }
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Dashboard", "Home");
         }
 
         internal class ChallengeResult : HttpUnauthorizedResult

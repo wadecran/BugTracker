@@ -9,7 +9,8 @@ namespace BugTracker.Utilities
     public class ProjectHelper
     {
         private ApplicationDbContext db = new ApplicationDbContext();
-        private UserRoleHelper roleHelper = new UserRoleHelper();
+        private RoleHelper roleHelper = new RoleHelper();
+        private NotificationHelper noteHelper = new NotificationHelper();
 
         public bool IsUserOnProject(string userId, int projectId)
         {
@@ -27,7 +28,7 @@ namespace BugTracker.Utilities
             }
         }
 
-        public void RemoveUseFromoProject(string userId, int projectId)
+        public void RemoveUserFromProject(string userId, int projectId)
         {
             Project project = db.Projects.Find(projectId);
             ApplicationUser user = db.Users.Find(userId);
@@ -100,6 +101,32 @@ namespace BugTracker.Utilities
             return resultList;
         }
 
+        public List<Project> ListNotUserProjects(string userId)
+        {
+            var user = db.Users.Find(userId);
+            var resultList = new List<Project>();
+            foreach(var project in db.Projects.ToList())
+            {
+                if (!project.Users.ToList().Contains(user))
+                {
+                    resultList.Add(project);
+                }
+            }
+            return resultList;
+        }
 
+        public List<Project> ListUnassignedProjects()
+        {
+            var resultList = new List<Project>();
+            foreach (var project in db.Projects.ToList())
+            {
+                if(project.Users == null)
+                {
+                    resultList.Add(project);
+                }
+            }
+
+            return resultList;
+        }
     }
 }

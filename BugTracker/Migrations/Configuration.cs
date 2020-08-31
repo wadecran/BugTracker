@@ -7,6 +7,7 @@ namespace BugTracker.Migrations
     using System.Data.Entity;
     using System.Data.Entity.Migrations;
     using System.Linq;
+    using System.Web.Configuration;
 
     internal sealed class Configuration : DbMigrationsConfiguration<BugTracker.Models.ApplicationDbContext>
     {
@@ -23,6 +24,12 @@ namespace BugTracker.Migrations
             //  to avoid creating duplicate seed data.
             var roleManager = new RoleManager<IdentityRole>(
                new RoleStore<IdentityRole>(context));
+            var demoAdminEmail = WebConfigurationManager.AppSettings["demoAdminEmail"];
+            var demoManagerEmail = WebConfigurationManager.AppSettings["demoPMEmail"];
+            var demoSubEmail = WebConfigurationManager.AppSettings["demoSubEmail"];
+            var demoDevEmail = WebConfigurationManager.AppSettings["demoDevEmail"];
+            var demoPassword = WebConfigurationManager.AppSettings["demoPassword"];
+            var defaultAvatarPath = WebConfigurationManager.AppSettings["DefaultAvatarPath"];
 
             if (!context.Roles.Any(r => r.Name == "Admin"))
             {
@@ -47,108 +54,80 @@ namespace BugTracker.Migrations
             var userManager = new UserManager<ApplicationUser>(
                 new UserStore<ApplicationUser>(context));
 
-            if (!context.Users.Any(u => u.Email == "Admin@mail.com"))
+            if (!context.Users.Any(u => u.Email == demoAdminEmail))
             {
                 userManager.Create(new ApplicationUser
                 {
-                    FirstName = "Ad",
-                    LastName = "Min",
-                    Email = "Admin@mail.com",
-                    UserName = "Admin@mail.com",
+                    FirstName = "Lazarus",
+                    LastName = "Long",
+                    Email = demoAdminEmail,
+                    UserName = demoAdminEmail,
+                    AvatarPath = defaultAvatarPath
 
 
-                }, "OpenMe123");
-                var userId = userManager.FindByEmail("Admin@mail.com").Id;
+                }, demoPassword);
+                var userId = userManager.FindByEmail(demoAdminEmail).Id;
                 userManager.AddToRoles(userId, "Admin");
             }
 
-            if (!context.Users.Any(u => u.Email == "ProjectManager@mail.com"))
+            if (!context.Users.Any(u => u.Email == demoManagerEmail))
             {
                 userManager.Create(new ApplicationUser
                 {
-                    FirstName = "Project",
-                    LastName = "Manager",
-                    Email = "ProjectManager@mail.com",
-                    UserName = "ProjectManager@mail.com",
+                    FirstName = "Valentine",
+                    LastName = "Smith",
+                    Email = demoManagerEmail,
+                    UserName = demoManagerEmail,
+                    AvatarPath = defaultAvatarPath
 
-
-                }, "OpenMe123");
-                var userId = userManager.FindByEmail("ProjectManager@mail.com").Id;
+                }, demoPassword);
+                var userId = userManager.FindByEmail(demoManagerEmail).Id;
                 userManager.AddToRoles(userId, "ProjectManager");
             }
 
-            if (!context.Users.Any(u => u.Email == "ProjectManager2@mail.com"))
+            if (!context.Users.Any(u => u.Email == demoDevEmail))
             {
                 userManager.Create(new ApplicationUser
                 {
-                    FirstName = "Project",
-                    LastName = "Manager2",
-                    Email = "ProjectManager2@mail.com",
-                    UserName = "ProjectManager2@mail.com",
+                    FirstName = "Juan",
+                    LastName = "Rico",
+                    Email = demoDevEmail,
+                    UserName = demoDevEmail,
+                    AvatarPath = defaultAvatarPath
 
-
-                }, "OpenMe123");
-                var userId = userManager.FindByEmail("ProjectManager2@mail.com").Id;
-                userManager.AddToRoles(userId, "ProjectManager");
-            }
-
-            if (!context.Users.Any(u => u.Email == "Developer@mail.com"))
-            {
-                userManager.Create(new ApplicationUser
-                {
-                    FirstName = "Dev",
-                    LastName = "Eloper",
-                    Email = "Developer@mail.com",
-                    UserName = "Developer@mail.com",
-
-
-                }, "OpenMe123");
-                var userId = userManager.FindByEmail("Developer@mail.com").Id;
+                }, demoPassword);
+                var userId = userManager.FindByEmail(demoDevEmail).Id;
                 userManager.AddToRoles(userId, "Developer");
             }
 
-            if (!context.Users.Any(u => u.Email == "Developer2@mail.com"))
+            if (!context.Users.Any(u => u.Email == "sampledev@mail.com"))
             {
                 userManager.Create(new ApplicationUser
                 {
-                    FirstName = "Dev",
-                    LastName = "Eloper",
-                    Email = "Developer2@mail.com",
-                    UserName = "Developer2@mail.com",
-
+                    FirstName = "Manuel",
+                    LastName = "O'Kelly-Davis",
+                    Email = "sampledev@mail.com",
+                    UserName = "sampledev@mail.com",
+                    AvatarPath = defaultAvatarPath
 
                 }, "OpenMe123");
-                var userId = userManager.FindByEmail("Developer2@mail.com").Id;
+                var userId = userManager.FindByEmail("sampledev@mail.com").Id;
                 userManager.AddToRoles(userId, "Developer");
             }
 
-            if (!context.Users.Any(u => u.Email == "Submitter@mail.com"))
+
+            if (!context.Users.Any(u => u.Email == demoSubEmail))
             {
                 userManager.Create(new ApplicationUser
                 {
-                    FirstName = "Sub",
-                    LastName = "Mitter",
-                    Email = "Submitter@mail.com",
-                    UserName = "Submitter@mail.com",
+                    FirstName = "Gillian",
+                    LastName = "Boardman",
+                    Email = demoSubEmail,
+                    UserName = demoSubEmail,
+                    AvatarPath = defaultAvatarPath
 
-
-                }, "OpenMe123");
-                var userId = userManager.FindByEmail("Submitter@mail.com").Id;
-                userManager.AddToRoles(userId, "Submitter");
-            }
-
-            if (!context.Users.Any(u => u.Email == "Submitter2@mail.com"))
-            {
-                userManager.Create(new ApplicationUser
-                {
-                    FirstName = "Sub",
-                    LastName = "Mitter",
-                    Email = "Submitter2@mail.com",
-                    UserName = "Submitter2@mail.com",
-
-
-                }, "OpenMe123");
-                var userId = userManager.FindByEmail("Submitter2@mail.com").Id;
+                }, demoPassword);
+                var userId = userManager.FindByEmail(demoSubEmail).Id;
                 userManager.AddToRoles(userId, "Submitter");
             }
 
@@ -188,10 +167,10 @@ namespace BugTracker.Migrations
             context.Projects.AddOrUpdate(
                 p => p.Name,
                 new Project() { Name = "Seed 1", Details = "Test", Created = DateTime.Now.AddDays(-60), IsArchived = true },
-                new Project() { Name = "Seed 2", Details = "Test", Created = DateTime.Now.AddDays(-30) },
-                new Project() { Name = "Seed 3", Details = "Test", Created = DateTime.Now.AddDays(-15) },
-                new Project() { Name = "Seed 4", Details = "Test", Created = DateTime.Now.AddDays(-10) },
-                new Project() { Name = "Seed 5", Details = "Test", Created = DateTime.Now.AddDays(-7) }
+                new Project() { Name = "Seed 2", Details = "Test", Created = DateTime.Now.AddDays(-30), IsArchived = false },
+                new Project() { Name = "Seed 3", Details = "Test", Created = DateTime.Now.AddDays(-15), IsArchived = false },
+                new Project() { Name = "Seed 4", Details = "Test", Created = DateTime.Now.AddDays(-10), IsArchived = false },
+                new Project() { Name = "Seed 5", Details = "Test", Created = DateTime.Now.AddDays(-7), IsArchived = false }
                 );
             #endregion
             context.SaveChanges();

@@ -17,28 +17,60 @@ namespace BugTracker.Controllers
     {
         private ApplicationDbContext db = new ApplicationDbContext();
         private ProjectHelper projHelp = new ProjectHelper();
-        private UserRoleHelper roleHelp = new UserRoleHelper();
+        private RoleHelper roleHelp = new RoleHelper();
+        private TicketHelper ticketHelp = new TicketHelper();
 
         // GET: Projects
         public ActionResult Index()
         {
-            return View(db.Projects.ToList());
+            if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+            {
+                var userView = new ProjectIndexVM()
+                {
+                    Projects = db.Projects.ToList(),
+                    UserProjects = projHelp.ListUserProjects(HttpContext.User.Identity.GetUserId())
+                };
+                return View(userView);
+            }
+            else
+            {
+                var userView = new ProjectIndexVM()
+                {
+                    UserProjects = projHelp.ListUserProjects(HttpContext.User.Identity.GetUserId())
+                };
+                return View(userView);
+            }
+
         }
 
         // GET: Projects/Details/5
-        public ActionResult Details(int? id)
+        public ActionResult Dashboard(int? id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            ViewBag.TicketPriorityId = new SelectList(db.TicketPriorities, "Id", "Name");
-            ViewBag.TicketTypeId = new SelectList(db.TicketTypes, "Id", "Name");
-            Project project = db.Projects.Find(id);
-            if (project == null)
+
+            var thisProject = db.Projects.Find(id);
+
+            if (thisProject == null)
             {
                 return HttpNotFound();
             }
+
+            var project = new ProjectDashboardVM()
+            {
+                Project = thisProject,
+                ProjectManager = projHelp.ListProjectUsersInRole(thisProject.Id, "ProjectManager").FirstOrDefault(),
+                ProjectDevs = projHelp.ListProjectUsersInRole(thisProject.Id, "Developer"),
+                ProjectSubs = projHelp.ListProjectUsersInRole(thisProject.Id, "Submitter"),
+                NotProjectUsers = projHelp.NotProjectUsers(thisProject.Id),
+                UnassignedTickets = ticketHelp.ListUnassignedTickets(thisProject.Id)
+            };
+
+            ViewBag.TicketPriorityId = new SelectList(db.TicketPriorities, "Id", "Name");
+            ViewBag.TicketTypeId = new SelectList(db.TicketTypes, "Id", "Name");
+
             return View(project);
         }
 
@@ -85,38 +117,40 @@ namespace BugTracker.Controllers
             #region Fail Cases
             if (model.Name == null)
             {
-                TempData["Errors"] += "<p class=\"text-danger\">You must define a Project Name</p>";
+                TempData["ProjectErrors"] += "<p class=\"text-danger\">You must define a Project Name</p>";
             }
             if (model.Details == null)
             {
-                TempData["Errors"] += "<p class=\"text-danger\">You must define Project Details</p>";
+                TempData["ProjectErrors"] += "<p class=\"text-danger\">You must define Project Details</p>";
             }
             if (model.ProjectManagerId == null)
             {
-                TempData["Errors"] += "<p class=\"text-danger\">You must select a Project Manager</p>";
+                TempData["ProjectErrors"] += "<p class=\"text-danger\">You must select a Project Manager</p>";
             }
             if (model.DeveloperIds.Count == 0)
             {
-                TempData["Errors"] += "<p  class=\"text-danger\">You must select at least one Developer</p>";
+                TempData["ProjectErrors"] += "<p  class=\"text-danger\">You must select at least one Developer</p>";
             }
             if (model.SubmitterIds.Count == 0)
             {
-                TempData["Errors"] += "<p  class=\"text-danger\">You must select at least one Submitter</p>";
-            }
-            if (!string.IsNullOrEmpty(TempData["Errors"].ToString()))
-            {
-                return Redirect(Request.UrlReferrer.ToString());
+                TempData["ProjectErrors"] += "<p  class=\"text-danger\">You must select at least one Submitter</p>";
             }
             #endregion
             if (ModelState.IsValid)
             {
                 Project project = new Project();
+                if(db.Projects.Any(p => p.Name == model.Name))
+                {
+                    TempData["ProjectErrors"] += "<p  class=\"text-danger\">A Project with this name already exists</p>";
+                    return Redirect(Request.UrlReferrer.ToString());
+                }
                 project.Name = model.Name;
                 project.Details = model.Details;
                 project.Created = DateTime.Now;
                 project.IsArchived = false;
                 db.Projects.Add(project);
                 db.SaveChanges();
+                TempData["ProjectErrors"] += "Success";
 
                 projHelp.AddUserToProject(model.ProjectManagerId, project.Id);
                 foreach (var userId in model.DeveloperIds)
@@ -158,15 +192,21 @@ namespace BugTracker.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "Id,Name,Details,Created,IsArchived")] Project project)
+        public ActionResult Edit(ProjectEditVM project, int projectId)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(project).State = EntityState.Modified;
+                var thisProject = db.Projects.Find(projectId);
+
+                thisProject.Name = project.Name;
+                thisProject.Details = project.Details;
+                thisProject.IsArchived = project.IsArchived;
+
                 db.SaveChanges();
-                return RedirectToAction("Index");
+
+                return Redirect(Request.UrlReferrer.ToString());
             }
-            return View(project);
+            return Redirect(Request.UrlReferrer.ToString());
         }
 
         // GET: Projects/Delete/5

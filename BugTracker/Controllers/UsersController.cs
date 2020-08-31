@@ -11,7 +11,7 @@ namespace BugTracker.Controllers
     public class UsersController : Controller
     {
         private ApplicationDbContext db = new ApplicationDbContext();
-        private UserRoleHelper roleHelper = new UserRoleHelper();
+        private RoleHelper roleHelper = new RoleHelper();
 
         // GET: Users
         public ActionResult Index()

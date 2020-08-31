@@ -8,9 +8,10 @@ using System.Web;
 
 namespace BugTracker.Utilities
 {
-    public class Userhelper
+    public class UserHelper
     {
         private ApplicationDbContext db = new ApplicationDbContext();
+        private RoleHelper roleHelper = new RoleHelper();
 
         public string GetUserEmail(string userId)
         {
@@ -19,16 +20,17 @@ namespace BugTracker.Utilities
 
         public string GetFullName(string userId)
         {
-            var user = db.Users.Find(userId); ;
-            var firstName = user.FirstName;
-            var lastName = user.LastName;
-            return firstName + " " + lastName;
+            var user = db.Users.Find(userId);
+            return user.FullName;
         }
 
         public string LastNameFirst(string userId) 
         {
-            var user = db.Users.Find(userId);
-            return user.FullName;
+            var user = db.Users.Find(userId); ;
+            var firstName = user.FirstName;
+            var lastName = user.LastName;
+            return lastName + " " + firstName ;
+            
         }
 
         public List<Project> ListUserProjects(string userId)
@@ -45,10 +47,47 @@ namespace BugTracker.Utilities
             return user.AvatarPath;
         }
 
-        //public ICollection<Project> ListUserProjects(string userId)
-        //{
-        //    var user = db.Users.Find(userId);
-        //    return db.Projects.Where(p => p.Users.Contains(user)).Tolist
-        //}
+        public List<ApplicationUser> ListUnassignedDevs()
+        {
+            var resultList = new List<ApplicationUser>();
+            foreach(var Dev in roleHelper.UsersInRole("Developer"))
+            {
+                if(Dev.Projects == null)
+                {
+                    resultList.Add(Dev);
+                }
+            }
+
+            return resultList;
+        }
+
+        public List<ApplicationUser> ListDevWithoutTicket()
+        {
+            var resultList = new List<ApplicationUser>();
+            foreach (var Dev in roleHelper.UsersInRole("Developer"))
+            {
+                if (!db.Tickets.Any(t => t.DeveloperId == Dev.Id))
+                {
+                    resultList.Add(Dev);
+                }
+
+            }
+
+            return resultList;
+        }
+
+        public List<ApplicationUser> ListUnassignedSubmitters()
+        {
+            var resultList = new List<ApplicationUser>();
+            foreach(var Sub in roleHelper.UsersInRole("Submitter"))
+            {
+                if(Sub.Projects == null)
+                {
+                    resultList.Add(Sub);
+                }
+            }
+
+            return resultList;
+        }
     }
 }

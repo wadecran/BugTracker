@@ -1,0 +1,705 @@
+﻿@model BugTracker.Models.Ticket
+@using Microsoft.AspNet.Identity;
+@using BugTracker.Utilities
+
+
+@{
+	ViewBag.Title = "Details";
+	var ticketHelper = new TicketHelper();
+	var roleHelper = new RoleHelper();
+}
+
+
+
+<div class="content">
+	<br />
+	<div class="row">
+		<div class="col">
+			<div class="card card-default">
+				<div class="card-header">
+					<div class="card-title">
+						<h3>
+							<i class="fas fa-ticket-alt"></i>
+							@Model.Issue
+						</h3>
+						<h5 style="margin-left: 10px">
+							<i class="far fa-clipboard"></i>
+							<a href="@Url.Action("Dashboard", "Projects", new { id = Model.Project.Id })">@Model.Project.Name</a>
+						</h5>
+						@if (ticketHelper.CanEditTicket(Model.Id))
+						{
+							<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-editticket">Edit Ticket</button>
+						}
+					</div>
+					<div class="user-block card-tools">
+						<img class="img-circle" src="@Model.Submitter.AvatarPath" alt="User Image">
+						<span class="username"><a href="#">@Model.Submitter.FullName</a></span>
+						<span class="description">@Model.Created</span>
+					</div>
+				</div>
+				<!-- /.card-header -->
+				<div class="card-body">
+					@Model.IssueDescription
+				</div>
+				<!-- /.card-body -->
+			</div>
+			<!-- /.card -->
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-lg-3 col-6">
+			@if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+			{
+				<a class="custom-card" data-toggle="modal" data-target="#modal-ticketassign">
+					<!-- small box -->
+					@if (Model.Developer != null)
+					{
+						<div class="small-box bg-success">
+							<div class="inner">
+								<h3>Assigned Dev</h3>
+								<h5>
+									@Model.Developer.FullName
+								</h5>
+							</div>
+							<div class="icon">
+								<i class="fas fa-user-cog"></i>
+							</div>
+						</div>
+					}
+					else
+					{
+						<div class="small-box bg-danger">
+							<div class="inner">
+								<h3>Assigned Dev</h3>
+								<h5>
+									<span>No Developer Assigned!</span>
+								</h5>
+							</div>
+							<div class="icon">
+								<i class="fas fa-user-cog"></i>
+							</div>
+						</div>
+					}
+				</a>
+			}
+			else
+			{
+				<!-- small box -->
+				if (Model.Developer != null)
+				{
+					<div class="small-box bg-success">
+						<div class="inner">
+							<h3>Assigned Dev</h3>
+							<h5>
+								@Model.Developer.FullName
+							</h5>
+						</div>
+						<div class="icon">
+							<i class="fas fa-user-cog"></i>
+						</div>
+					</div>
+				}
+				else
+				{
+					<div class="small-box bg-danger">
+						<div class="inner">
+							<h3>Assigned Dev</h3>
+							<h5>
+								<span>No Developer Assigned!</span>
+							</h5>
+						</div>
+						<div class="icon">
+							<i class="fas fa-user-cog"></i>
+						</div>
+					</div>
+				}
+			}
+		</div>
+		<!-- ./col -->
+		<div class="col-lg-3 col-6">
+			<!-- small box -->
+			<div class="small-box bg-blue">
+				<div class="inner">
+					<h3>Priority</h3>
+
+					<h5>@Model.TicketPriority.Name</h5>
+				</div>
+				<div class="icon">
+					<i class="far fa-clock"></i>
+				</div>
+			</div>
+		</div>
+		<!-- ./col -->
+		<div class="col-lg-3 col-6">
+			<!-- small box -->
+			<div class="small-box bg-success">
+				<div class="inner">
+					<h3>Status</h3>
+
+					<h5>@Model.TicketStatus.Name</h5>
+				</div>
+				<div class="icon">
+					<i class="fas fa-check"></i>
+				</div>
+			</div>
+		</div>
+		<!-- ./col -->
+		<div class="col-lg-3 col-6">
+			<!-- small box -->
+			<div class="small-box bg-warning">
+				<div class="inner">
+					<h3>Type</h3>
+
+					<h5>@Model.TicketType.Name</h5>
+				</div>
+				<div class="icon">
+					<i class="far fa-question-circle"></i>
+				</div>
+			</div>
+		</div>
+		<!-- ./col -->
+	</div>
+	<div class="row">
+		<div class="col">
+			<div class="card direct-chat direct-chat-primary">
+				<div class="card-header">
+					<h3 class="card-title">Comments</h3>
+					<div class="card-tools">
+						@Html.ActionLink("View Comments", "Index", "TicketComments", new { ticketId = Model.Id} ,htmlAttributes: new { @class = "btn btn-primary" })
+					</div>
+				</div>
+				<!-- /.card-header -->
+				<div class="card-body">
+					<!-- Conversations are loaded here -->
+					<div class="direct-chat-messages">
+						@foreach (var comment in Model.Comments)
+						{
+							<!-- Message. Default to the left -->
+							<div class="direct-chat-msg">
+								<div class="direct-chat-infos clearfix">
+									<span class="direct-chat-name float-left">@comment.User.FullName</span>
+									<span class="direct-chat-timestamp float-right">@comment.Created</span>
+								</div>
+								<!-- /.direct-chat-infos -->
+								<img class="direct-chat-img" src="@comment.User.AvatarPath" alt="message user image">
+								<!-- /.direct-chat-img -->
+								<div class="direct-chat-text">
+									@comment.Comment
+								</div>
+								<!-- /.direct-chat-text -->
+							</div>
+						}
+					</div>
+
+				</div>
+				@if (ticketHelper.CanMakeComment(Model.Id))
+				{
+					<div class="card-footer">
+						<form action="/TicketComments/Create" id="form" method="post">
+							<div class="input-group">
+
+								@Html.AntiForgeryToken()
+								@Html.Hidden("TicketId", Model.Id)
+
+
+
+								<input type="text" name="Comment" placeholder="Type Message ..." class="form-control">
+
+								<span class="input-group-append">
+
+									@*<button type="button" class="btn btn-primary">Send</button>*@
+									<input type="submit" value="Send" class="btn btn-primary" />
+
+								</span>
+							</div>
+						</form>
+					</div>
+				}
+
+			</div>
+		</div>
+		<div class="col">
+			<div class="card direct-chat direct-chat-primary">
+				<div class="card-header">
+					<h3 class="card-title">Attachments</h3>
+					<div class="card-tools">
+						@Html.ActionLink("View Attachments", "Index", "TicketAttachments", htmlAttributes: new { @class = "btn btn-primary" })
+					</div>
+				</div>
+				<!-- /.card-header -->
+				<div class="card-body">
+					<!-- Conversations are loaded here -->
+					<div class="direct-chat-messages">
+						<!-- Message. Default to the left -->
+						<table class="table">
+							<tr>
+								<th>
+									@Html.DisplayName("Icon")
+								</th>
+								<th>
+									@Html.DisplayName("Title")
+								</th>
+								<th>
+									@Html.DisplayName("File Name")
+								</th>
+							</tr>
+
+							@foreach (var attachment in Model.Attachments)
+							{
+								<tr>
+									<td>
+									</td>
+									<td>
+										@Html.DisplayFor(modelItem => attachment.Description)
+									</td>
+									<td>
+										<a target="_blank" href="@attachment.FilePath">@attachment.FileName</a>
+									</td>
+								</tr>
+							}
+
+						</table>
+					</div>
+				</div>
+				@if (ticketHelper.CanAddAttachment(Model.Id))
+				{
+					<div class="card-footer">
+
+						<button type="button" class="btn btn-success btn-wide nav-btn" data-toggle="modal" data-target="#modal-attachment">
+							Add Attachment
+						</button>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card">
+				<div class="card-header">
+					<h5 class="card-title">History</h5>
+
+					<div class="card-tools">
+						<button type="button" class="btn btn-tool" data-card-widget="collapse">
+							<i class="fas fa-minus"></i>
+						</button>
+					</div>
+				</div>
+				<!-- /.card-header -->
+				<div class="card-body">
+					<table class="table">
+						<tr>
+							<th>
+								Changed by
+							</th>
+							<th>
+								Property
+							</th>
+							<th>
+								Old Value
+							</th>
+							<th>
+								New Value
+							</th>
+							<th>
+								Changed On
+							</th>
+
+						</tr>
+
+						@foreach (var item in Model.Histories)
+						{
+							<tr>
+								<td>
+									@Html.DisplayFor(modelItem => item.User.FullName)
+								</td>
+								<td>
+									@Html.DisplayFor(modelItem => item.Property)
+								</td>
+								<td>
+									@Html.DisplayFor(modelItem => item.OldValue)
+								</td>
+								<td>
+									@Html.DisplayFor(modelItem => item.NewValue)
+								</td>
+								<td>
+									@Html.DisplayFor(modelItem => item.ChangedOn)
+								</td>
+
+							</tr>
+						}
+
+					</table>
+					<!-- /.row -->
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+</div>
+
+@*<h2>Details</h2>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-md-offset-1 col-md-10">
+				<p>Project Data</p>
+				<br />
+				<h2>Project name: @Model.Project.Name</h2>
+				<h2>Project Created: @Model.Project.Created</h2>
+			</div>
+
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<p>Ticket Data</p>
+				<br />
+				<h2>Title: @Model.Issue</h2>
+				<h2>Priority: @Model.TicketPriority.Name</h2>
+				<h2>Status: @Model.TicketStatus.Name</h2>
+				<h2>Type: @Model.TicketType.Name</h2>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6">
+
+			</div>
+			@if (ticketHelper.CanAddAttachment(Model.Id))
+			{
+				<div class="col-md-6">
+					@using (Html.BeginForm("Create", "TicketAttachments", FormMethod.Post, new { enctype = "multipart/form-data" }))
+					{
+						@Html.AntiForgeryToken()
+						@Html.Hidden("TicketId", Model.Id)
+
+						<div class="form-group">
+							@Html.Label("File Name", htmlAttributes: new { @class = "control-label col-md-2" })
+							<div class="col-md-10">
+								@Html.Editor("FileName", new { htmlAttributes = new { @class = "form-control" } })
+							</div>
+						</div>
+
+						<div class="form-group">
+							@Html.Label("Description", htmlAttributes: new { @class = "control-label col-md-2" })
+							<div class="col-md-10">
+								@Html.TextArea("attachmentDescription", new { htmlAttributes = new { @class = "form-control" } })
+							</div>
+						</div>
+
+						<div class="form-group">
+							@Html.Label("Attachment", htmlAttributes: new { @class = "control-label col-md-2" })
+							<div class="col-md-10">
+								<input type="file" name="file" />
+							</div>
+						</div>
+
+
+						<div class="form-group">
+							<div class="col-md-offset-2 col-md-10">
+								<input type="submit" class="btn btn-primary btn-wide" value="Add Attachment" />
+							</div>
+						</div>
+
+					}
+
+					<hr />
+
+
+
+				</div>
+			}
+		</div>
+	</div>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col">
+
+			</div>
+		</div>
+	</div>
+	@if (Model.Comments.Count != 0)
+	{
+		<table class="table">
+			<tr>
+
+				<th>
+					First Name
+				</th>
+				<th>
+					Comment
+				</th>
+				<th>
+					Posted On
+				</th>
+				<th></th>
+			</tr>
+
+			@foreach (var item in Model.Comments.OrderByDescending(c => c.Created))
+			{
+				<tr>
+					<td>
+						@Html.DisplayFor(modelItem => item.User.FullName)
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.Comment)
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.Created)
+					</td>
+					<td>
+						@Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+						@Html.ActionLink("Details", "Details", new { id = item.Id }) |
+						@Html.ActionLink("Delete", "Delete", new { id = item.Id })
+					</td>
+				</tr>
+			}
+
+		</table>
+	}
+	else
+	{
+		<h4> No comments have been made for this Ticket</h4>
+	}*@
+@*@if (ticketHelper.CanMakeComment(Model.Id))
+	{
+		using (Html.BeginForm("Create", "TicketComments", FormMethod.Post))
+		{
+			@Html.AntiForgeryToken()
+
+			<div class="form-horizontal">
+				<h4>TicketComment</h4>
+				<hr />
+				@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+				@Html.Hidden("TicketId", Model.Id)
+
+				<div class="form-group">
+					@Html.Label("Comment", htmlAttributes: new { @class = "control-label col-md-2" })
+					<div class="col-md-10">
+						@Html.TextArea("Comment", new { htmlAttributes = new { @class = "form-control" } })
+						@Html.ValidationMessage("Comment", "", new { @class = "text-danger" })
+					</div>
+				</div>
+
+
+				<div class="form-group">
+					<div class="col-md-offset-2 col-md-10">
+						<input type="submit" value="Create" class="btn btn-default" />
+					</div>
+				</div>
+			</div>
+		}*@
+@*}
+	<p>
+		@if (ticketHelper.CanEditTicket(Model.Id))
+		{
+			@Html.ActionLink("Edit", "Edit", new { id = Model.Id }) <span>|</span>
+		}
+		@Html.ActionLink("Back to List", "Index")
+	</p>*@
+@if (ticketHelper.CanAddAttachment(Model.Id))
+{
+	<div class="modal fade" id="modal-attachment">
+		<div class="modal-dialog">
+			<div class="modal-content bg-primary">
+				<div class="modal-header">
+					<h4 class="modal-title">Add Attachment</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+
+				<div class="modal-body">
+					@using (Html.BeginForm("Create", "TicketAttachments", FormMethod.Post, new { enctype = "multipart/form-data" }))
+					{
+						@Html.AntiForgeryToken()
+						@Html.Hidden("TicketId", Model.Id)
+
+						<div class="form-group">
+							@Html.Label("File Name", htmlAttributes: new { @class = "control-label col-md-2" })
+							<div class="col-md-10">
+								@Html.Editor("FileName", new { htmlAttributes = new { @class = "form-control" } })
+							</div>
+						</div>
+
+						<div class="form-group">
+							@Html.Label("Description", htmlAttributes: new { @class = "control-label col-md-2" })
+							<div class="col-md-10">
+								@Html.TextArea("attachmentDescription", htmlAttributes: new { @class = "form-control" })
+							</div>
+						</div>
+
+						<div class="form-group">
+							@Html.Label("Attachment", htmlAttributes: new { @class = "control-label col-md-2" })
+							<div class="col-md-10">
+								<input type="file" name="file" />
+							</div>
+						</div>
+
+
+						<div class="form-group">
+							<div class="col-md-offset-2 col-md-10">
+								<input type="submit" class="btn btn-success btn-wide" value="Add Attachment" />
+							</div>
+						</div>
+
+					}
+
+				</div>
+			</div>
+		</div>
+	</div>
+}
+@if (ticketHelper.CanEditTicket(Model.Id))
+{
+	<div class="modal fade" id="modal-editticket">
+		<div class="modal-dialog">
+			<div class="modal-content bg-primary">
+				<div class="modal-header">
+					<h4 class="modal-title">Add Attachment</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+
+				<div class="modal-body">
+					@{
+						ViewBag.TicketPriorityId = new SelectList(ticketHelper.GetTicketPriorities(), "Id", "Name", Model.TicketPriorityId);
+						ViewBag.TicketStatusId = new SelectList(ticketHelper.GetTicketStatuses(), "Id", "Name", Model.TicketStatusId);
+						ViewBag.TicketTypeId = new SelectList(ticketHelper.GetTicketTypes(), "Id", "Name", Model.TicketTypeId);
+						ViewBag.DeveloperId = new SelectList(roleHelper.UsersInRole("Developer"), "Id", "Email");
+					}
+					@using (Html.BeginForm("Edit", "Tickets", new { ticketId = Model.Id }))
+					{
+						@Html.AntiForgeryToken()
+
+						@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+						<div class="form-group">
+							@Html.LabelFor(model => model.TicketPriorityId, "TicketPriorityId", htmlAttributes: new { @class = "control-label col-md-2" })
+							<div class="col-md-10">
+								@Html.DropDownList("TicketPriorityId", null, htmlAttributes: new { @class = "form-control" })
+								@Html.ValidationMessageFor(model => model.TicketPriorityId, "", new { @class = "text-danger" })
+							</div>
+						</div>
+
+						if (User.IsInRole("ProjectManager") || User.IsInRole("Admin"))
+						{
+							<div class="form-group">
+								@Html.LabelFor(model => model.TicketStatusId, "TicketStatusId", htmlAttributes: new { @class = "control-label col-md-2" })
+								<div class="col-md-10">
+									@Html.DropDownList("TicketStatusId", null, htmlAttributes: new { @class = "form-control" })
+									@Html.ValidationMessageFor(model => model.TicketStatusId, "", new { @class = "text-danger" })
+								</div>
+							</div>
+						}
+
+						<div class="form-group">
+							@Html.LabelFor(model => model.TicketTypeId, "TicketTypeId", htmlAttributes: new { @class = "control-label col-md-2" })
+							<div class="col-md-10">
+								@Html.DropDownList("TicketTypeId", null, htmlAttributes: new { @class = "form-control" })
+								@Html.ValidationMessageFor(model => model.TicketTypeId, "", new { @class = "text-danger" })
+							</div>
+						</div>
+
+						if (User.IsInRole("ProjectManager") || User.IsInRole("Admin"))
+						{
+							<div class="form-group">
+								@Html.LabelFor(model => model.DeveloperId, htmlAttributes: new { @class = "control-label col-md-2" })
+								<div class="col-md-10">
+									@Html.DropDownList("DeveloperId", null, htmlAttributes: new { @class = "form-control" })
+									@Html.ValidationMessageFor(model => model.DeveloperId, "", new { @class = "text-danger" })
+								</div>
+							</div>
+						}
+						<div class="form-group">
+							@Html.LabelFor(model => model.Issue, htmlAttributes: new { @class = "control-label col-md-2" })
+							<div class="col-md-10">
+								@Html.EditorFor(model => model.Issue, new { htmlAttributes = new { @class = "form-control" } })
+								@Html.ValidationMessageFor(model => model.Issue, "", new { @class = "text-danger" })
+							</div>
+						</div>
+
+						<div class="form-group">
+							@Html.LabelFor(model => model.IssueDescription, htmlAttributes: new { @class = "control-label col-md-2" })
+							<div class="col-md-10">
+								@Html.TextArea("IssueDescription", htmlAttributes: new { @class = "form-control" })
+								@Html.ValidationMessageFor(model => model.IssueDescription, "", new { @class = "text-danger" })
+							</div>
+						</div>
+
+						if (User.IsInRole("ProjectManager") || User.IsInRole("Admin"))
+						{
+							<div class="form-group">
+								@Html.LabelFor(model => model.IsResolved, htmlAttributes: new { @class = "control-label col-md-2" })
+								<div class="col-md-10">
+									<div class="checkbox">
+										@Html.EditorFor(model => model.IsResolved)
+										@Html.ValidationMessageFor(model => model.IsResolved, "", new { @class = "text-danger" })
+									</div>
+								</div>
+							</div>
+
+							<div class="form-group">
+								@Html.LabelFor(model => model.IsArchived, htmlAttributes: new { @class = "control-label col-md-2" })
+								<div class="col-md-10">
+									<div class="checkbox">
+										@Html.EditorFor(model => model.IsArchived)
+										@Html.ValidationMessageFor(model => model.IsArchived, "", new { @class = "text-danger" })
+									</div>
+								</div>
+							</div>
+						}
+
+						<div class="form-group">
+							<div class="col-md-offset-2 col-md-10">
+								<input type="submit" value="Save" class="btn btn-default" />
+							</div>
+						</div>
+
+					}
+
+
+
+				</div>
+			</div>
+		</div>
+	</div>
+}
+@if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+{
+	<div class="modal fade" id="modal-ticketassign">
+		<div class="modal-dialog">
+			<div class="modal-content bg-primary">
+				<div class="modal-header">
+					<h4 class="modal-title">Add Attachment</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+
+				<div class="modal-body">
+					@{
+						ViewBag.UserId = new SelectList(roleHelper.UsersInRole("Developer"), "Id", "FullName");
+					}
+					@using (Html.BeginForm("ManageTicketUser", "Assignments", new { ticketId = Model.Id }, FormMethod.Post))
+					{
+						@Html.AntiForgeryToken()
+
+						<div class="form-group">
+							<h4>Add User</h4>
+							@Html.DropDownList("UserId", null, htmlAttributes: new { @class = "form-control" })
+						</div>
+
+						<div class="form-group">
+							<input type="submit" class="btn btn-success btn-block" value="Assign Ticket" />
+						</div>
+
+					}
+
+				</div>
+			</div>
+		</div>
+	</div>
+}

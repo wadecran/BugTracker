@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.ComponentModel.DataAnnotations;
 
 namespace BugTracker.Models
 {
@@ -31,8 +32,9 @@ namespace BugTracker.Models
         #endregion
 
         #region Actual Properties
+        [Required]
         public string Issue { get; set; }
-
+        [Required]
         public string IssueDescription { get; set; }
 
         public DateTime Created { get; set; }

@@ -9,6 +9,7 @@ using System.Web;
 using System.Web.Mvc;
 using BugTracker.Models;
 using BugTracker.Utilities;
+using Microsoft.Ajax.Utilities;
 using Microsoft.AspNet.Identity;
 
 namespace BugTracker.Controllers
@@ -18,10 +19,19 @@ namespace BugTracker.Controllers
         private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: TicketAttachments
-        public ActionResult Index()
+        public ActionResult Index(int ticketId)
         {
-            var ticketAttachments = db.TicketAttachments.Include(t => t.Ticket).Include(t => t.User);
-            return View(ticketAttachments.ToList());
+            if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+            {
+                var ticketAttachments = db.TicketAttachments.Include(t => t.Ticket).Include(t => t.User);
+                return View(ticketAttachments.ToList());
+            }
+            else
+            {
+                var userId = User.Identity.GetUserId();
+                var ticketAttachments = db.TicketAttachments.Where(a => a.TicketId == ticketId).Where(a => a.UserId == userId);
+                return View(ticketAttachments);
+            }
         }
 
         // GET: TicketAttachments/Details/5
@@ -55,7 +65,7 @@ namespace BugTracker.Controllers
              if(file == null)
                 {
                     TempData["FileError"] = "You must supply a file!";
-                    return RedirectToAction("Details", "Tickts", new { id = ticketAttachment.TicketId });
+                    return RedirectToAction("Dashboard", "Tickets", new { id = ticketAttachment.TicketId });
                 }
             if (ModelState.IsValid)
             {
@@ -65,16 +75,16 @@ namespace BugTracker.Controllers
                     ticketAttachment.UserId = User.Identity.GetUserId();
                     var fileName = FileHelper.MakeUnique(file);
 
-                    file.SaveAs(Path.Combine(Server.MapPath("~/Avatars/"), fileName));
+                    file.SaveAs(Path.Combine(Server.MapPath("~/Uploads/"), fileName));
                     ticketAttachment.FilePath = "/Uploads/" + fileName;
                     db.TicketAttachments.Add(ticketAttachment);
                     db.SaveChanges();
-                    return RedirectToAction("Details", "Tickets", new { id = ticketAttachment.TicketId });
+                    return RedirectToAction("Dashboard", "Tickets", new { id = ticketAttachment.TicketId });
 
                 }
             }
             TempData["FileError"] = "The model was invalid!";
-            return RedirectToAction("Details", "Tickets", new { id = ticketAttachment.TicketId });
+            return RedirectToAction("Dashboard", "Tickets", new { id = ticketAttachment.TicketId });
         }
 
         // GET: TicketAttachments/Edit/5
@@ -131,7 +141,7 @@ namespace BugTracker.Controllers
             TicketAttachment ticketAttachment = db.TicketAttachments.Find(id);
             db.TicketAttachments.Remove(ticketAttachment);
             db.SaveChanges();
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", new { ticketId = ticketAttachment.TicketId});
         }
 
         protected override void Dispose(bool disposing)

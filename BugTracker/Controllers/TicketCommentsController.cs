@@ -16,10 +16,19 @@ namespace BugTracker.Controllers
         private ApplicationDbContext db = new ApplicationDbContext();
 
         // GET: TicketComments
-        public ActionResult Index()
+        public ActionResult Index(int ticketId)
         {
-            var ticketComments = db.TicketComments.Include(t => t.Ticket).Include(t => t.User);
-            return View(ticketComments.ToList());
+            if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+            {
+                var ticketComments = db.TicketComments.Where(c => c.TicketId == ticketId);
+                return View(ticketComments.ToList());
+            }
+            else
+            {
+                var userId = User.Identity.GetUserId();
+                var ticketComments = db.TicketComments.Where(c => c.TicketId == ticketId).Where(c => c.UserId == userId);
+                return View(ticketComments.ToList());
+            }
         }
 
         // GET: TicketComments/Details/5
@@ -58,7 +67,7 @@ namespace BugTracker.Controllers
                 ticketComment.Created = DateTime.Now;
                 db.TicketComments.Add(ticketComment);
                 db.SaveChanges();
-                return RedirectToAction("Details", "Tickets", new { id = ticketComment.TicketId });
+                return RedirectToAction("Dashboard", "Tickets", new { id = ticketComment.TicketId });
             }
 
             ViewBag.TicketId = new SelectList(db.Tickets, "Id", "SubmitterId", ticketComment.TicketId);
@@ -78,8 +87,6 @@ namespace BugTracker.Controllers
             {
                 return HttpNotFound();
             }
-            ViewBag.TicketId = new SelectList(db.Tickets, "Id", "SubmitterId", ticketComment.TicketId);
-            ViewBag.UserId = new SelectList(db.Users, "Id", "FirstName", ticketComment.UserId);
             return View(ticketComment);
         }
 
@@ -94,10 +101,8 @@ namespace BugTracker.Controllers
             {
                 db.Entry(ticketComment).State = EntityState.Modified;
                 db.SaveChanges();
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", new { ticketId = ticketComment.TicketId });
             }
-            ViewBag.TicketId = new SelectList(db.Tickets, "Id", "SubmitterId", ticketComment.TicketId);
-            ViewBag.UserId = new SelectList(db.Users, "Id", "FirstName", ticketComment.UserId);
             return View(ticketComment);
         }
 
@@ -124,7 +129,7 @@ namespace BugTracker.Controllers
             TicketComment ticketComment = db.TicketComments.Find(id);
             db.TicketComments.Remove(ticketComment);
             db.SaveChanges();
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", new { ticketId = ticketComment.TicketId });
         }
 
         protected override void Dispose(bool disposing)

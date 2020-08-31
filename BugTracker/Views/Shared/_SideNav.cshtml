@@ -1,0 +1,98 @@
+﻿@using BugTracker.ViewModels
+@model _SideNavVM 
+
+<li class="nav-item">
+	<a href="@Url.Action("Dashboard", "Home")" class="nav-link active">
+		<i class="nav-icon fas fa-th"></i>
+		<p>
+			Dashboard
+		</p>
+	</a>
+</li>
+<li class="nav-item has-treeview">
+	<a href="#" class="nav-link">
+		<i class="nav-icon far fa-clipboard"></i>
+		<p>
+			Projects
+			<i class="right fas fa-angle-left"></i>
+		</p>
+	</a>
+	<ul class="nav nav-treeview">
+		<li class="nav-item">
+			<a href="@Url.Action("Index", "Projects")" class="nav-link">
+				<i class="fa fa-list nav-icon"></i>
+				<p>All Projects</p>
+			</a>
+		</li>
+	</ul>
+	@foreach (var project in Model.Projects)
+	{
+	<ul class="nav nav-treeview">
+		<li class="nav-item">
+			<a href="@Url.Action("Dashboard", "Projects", new { id = project.Id })" class="nav-link">
+				<i class="fa fa-caret-right nav-icon"></i>
+				<p>@project.Name</p>
+			</a>
+		</li>
+	</ul>
+	}
+</li>
+<li class="nav-item has-treeview">
+	<a href="#" class="nav-link">
+		<i class="nav-icon fas fa-ticket-alt"></i>
+		<p>
+			Tickets
+			<i class="right fas fa-angle-left"></i>
+		</p>
+	</a>
+	<ul class="nav nav-treeview">
+		<li class="nav-item">
+			<a href="@Url.Action("Index", "Tickets")" class="nav-link">
+				<i class="fas fa-list nav-icon"></i>
+				<p>All Tickets</p>
+			</a>
+		</li>
+	</ul>
+	@foreach (var ticket in Model.Tickets)
+	{
+	<ul class="nav nav-treeview">
+		<li class="nav-item">
+			<a href="@Url.Action("Dashboard", "Tickets", new { id = ticket.Id })" class="nav-link">
+				<i class="fa fa-caret-right nav-icon"></i>
+				<p>@ticket.Issue</p>
+			</a>
+		</li>
+	</ul>
+	}
+</li>
+@if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+{
+<li class="nav-item has-treeview">
+	<a href="#" class="nav-link">
+		<i class="nav-icon fas fa-user"></i>
+		<p>
+			Users
+			<i class="right fas fa-angle-left"></i>
+		</p>
+	</a>
+	<ul class="nav nav-treeview">
+		<li class="nav-item">
+			<a href="@Url.Action("Index", "Users")" class="nav-link">
+				<i class="fas fa-users nav-icon"></i>
+				<p>All Users</p>
+			</a>
+		</li>
+	</ul>
+	@foreach (var user in Model.Users)
+	{
+	<ul class="nav nav-treeview">
+		<li class="nav-item">
+			<a href="@Url.Action("UserDashboard", "Account", new { id = user.Id })" class="nav-link">
+				<i class="fas fa-address-card nav-icon"></i>
+				<p>@user.FullName</p>
+			</a>
+		</li>
+	</ul>
+	}
+</li>
+}

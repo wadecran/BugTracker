@@ -59,21 +59,22 @@
 
 <div class="social-auth-links text-center mb-3">
 	<p>- OR -</p>
-	<a href="#" class="btn btn-block btn-primary">
-		<i class="fab fa-facebook mr-2"></i> Sign in using Facebook
-	</a>
-	<a href="#" class="btn btn-block btn-danger">
-		<i class="fab fa-google-plus mr-2"></i> Sign in using Google+
-	</a>
+		@*<a href="#" class="btn btn-block btn-danger">
+			<i class="fab fa-google-plus mr-2"></i> Sign in using Google+
+		</a>*@
+	@Html.Partial("_ExternalLoginsListPartial", new ExternalLoginListViewModel { ReturnUrl = ViewBag.ReturnUrl })
 </div>
 <!-- /.social-auth-links -->
-
 <p class="mb-2">
 	@Html.ActionLink("Forgot your password?", "ForgotPassword")
 </p>
-<p class="mb-1">
+<p class="mb-2">
 	@Html.ActionLink("Register as a new user", "Register")
 </p>
-<p class="mb-0">
+<p class="mb-2">
 	@Html.ActionLink("Resend Email Confirmation", "ResendEmailConfirmation")
 </p>
+<p class="mb-1">
+	@Html.ActionLink("Log in as Demo User", "DemoLogin")
+</p>
+

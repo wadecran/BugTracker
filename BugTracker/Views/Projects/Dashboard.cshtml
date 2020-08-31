@@ -1,0 +1,600 @@
+﻿@using BugTracker.ViewModels
+@using BugTracker.Utilities
+@model ProjectDashboardVM
+
+@{
+	ViewBag.Title = "Project Dashboard";
+	RoleHelper roleHelper = new RoleHelper();
+	TicketHelper ticketHelper = new TicketHelper();
+
+}
+
+
+<div class="content">
+	<br />
+	<div class="row">
+		<div class="col">
+			<div class="card card-default">
+				<div class="card-header">
+					<div class="card-title">
+						<h3>
+							<i class="far fa-clipboard"></i>
+							@Model.Project.Name
+						</h3>
+						@if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+						{
+							<button class="btn btn-primary" data-toggle="modal" data-target="#modal-editproject">Edit Project</button>
+						}
+					</div>
+					<div class="user-block card-tools">
+						@if (Model.Project.IsArchived)
+						{
+							<span class="badge badge-danger">
+								Archived
+							</span>
+						}
+					</div>
+				</div>
+				<div class="card-body">
+					@Model.Project.Details
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Small boxes (Stat box) -->
+	<div class="row">
+		<div class="col-lg-3 col-6">
+			<!-- small box -->
+			<div class="small-box bg-danger">
+				<div class="inner">
+					<h3>Tickets</h3>
+
+					<h5>@Model.Project.Tickets.Where(t => t.IsResolved).ToList().Count of @Model.Project.Tickets.Count Resolved</h5>
+				</div>
+				<div class="icon">
+					<i class="fas fa-ticket-alt"></i>
+				</div>
+
+			</div>
+		</div>
+		<!-- ./col -->
+		@if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+		{
+			<div class="col-lg-3 col-6">
+
+				<!-- small box -->
+				<a class="custom-card" data-toggle="modal" data-target="#modal-assignmanager">
+					<div class="small-box bg-blue">
+						<div class="inner">
+							<h3>Manager</h3>
+							@if (Model.ProjectManager == null)
+							{
+								<h5>No Manager Assigned</h5>
+							}
+							else
+							{
+								<h5>@Model.ProjectManager.FullName</h5>
+							}
+						</div>
+						<div class="icon">
+							<i class="fas fa-user-tie"></i>
+						</div>
+
+					</div>
+				</a>
+			</div>
+			<!-- ./col -->
+			<div class="col-lg-3 col-6">
+				<!-- small box -->
+				<a class="custom-card" data-toggle="modal" data-target="#modal-assigndevs">
+					<div class="small-box bg-success">
+						<div class="inner">
+							<h3>Developers</h3>
+							@if (Model.ProjectDevs == null)
+							{
+								<h5>No Developers Assigned</h5>
+							}
+							else
+							{
+								<h5>@Model.ProjectDevs.Count</h5>
+							}
+						</div>
+						<div class="icon">
+							<i class="fas fa-user-cog"></i>
+						</div>
+
+					</div>
+				</a>
+			</div>
+			<!-- ./col -->
+			<div class="col-lg-3 col-6">
+				<!-- small box -->
+				<a class="custom-card" data-toggle="modal" data-target="#modal-assignsubs">
+					<div class="small-box bg-secondary">
+						<div class="inner">
+							<h3>Submitters</h3>
+							@if (Model.ProjectSubs == null)
+							{
+								<h5>No Submitters Assigned</h5>
+							}
+							else
+							{
+								<h5>@Model.ProjectSubs.Count</h5>
+							}
+						</div>
+						<div class="icon">
+							<i class="fas fa-users"></i>
+						</div>
+
+					</div>
+				</a>
+			</div>
+			<!-- ./col -->
+		}
+		else
+		{
+			<div class="col-lg-3 col-6">
+
+				<!-- small box -->
+				<div class="small-box bg-blue">
+					<div class="inner">
+						<h3>Manager</h3>
+						@if (Model.ProjectManager == null)
+						{
+							<h5>No Manager Assigned</h5>
+						}
+						else
+						{
+							<h5>@Model.ProjectManager.FullName</h5>
+						}
+					</div>
+					<div class="icon">
+						<i class="fas fa-user-tie"></i>
+					</div>
+				</div>
+			</div>
+			<!-- ./col -->
+			<div class="col-lg-3 col-6">
+				<!-- small box -->
+				<div class="small-box bg-success">
+					<div class="inner">
+						<h3>Developers</h3>
+						@if (Model.ProjectDevs == null)
+						{
+							<h5>No Developers Assigned</h5>
+						}
+						else
+						{
+							<h5>@Model.ProjectDevs.Count</h5>
+						}
+					</div>
+					<div class="icon">
+						<i class="fas fa-user-cog"></i>
+					</div>
+				</div>
+			</div>
+			<!-- ./col -->
+			<div class="col-lg-3 col-6">
+				<!-- small box -->
+				<div class="small-box bg-secondary">
+					<div class="inner">
+						<h3>Submitters</h3>
+						@if (Model.ProjectSubs == null)
+						{
+							<h5>No Submitters Assigned</h5>
+						}
+						else
+						{
+							<h5>@Model.ProjectSubs.Count</h5>
+						}
+					</div>
+					<div class="icon">
+						<i class="fas fa-users"></i>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card">
+				<div class="card-header">
+					<h5 class="card-title">Users</h5>
+
+					<div class="card-tools">
+						<button type="button" class="btn btn-tool" data-card-widget="collapse">
+							<i class="fas fa-minus"></i>
+						</button>
+					</div>
+				</div>
+				<!-- /.card-header -->
+				<div class="card-body">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>
+									Name
+								</th>
+								<th>
+									Role
+								</th>
+								<th>
+									Email
+								</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var item in Model.Project.Users)
+							{
+								<tr>
+									<td>
+										@Html.DisplayFor(modelItem => item.FullName)
+									</td>
+									<td>
+										<p>@roleHelper.ListUserRoles(item.Id).FirstOrDefault().ToString()</p>
+									</td>
+									<td>
+										@Html.DisplayFor(modelItem => item.Email)
+									</td>
+									<td>
+										@Html.ActionLink("Details", "UserDashboard", "Account", new { id = item.Id }, null)
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+					<!-- /.row -->
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="card">
+				<div class="card-header">
+					<h5 class="card-title">Tickets</h5>
+
+					<div class="card-tools">
+						<button type="button" class="btn btn-tool" data-card-widget="collapse">
+							<i class="fas fa-minus"></i>
+						</button>
+					</div>
+				</div>
+				<!-- /.card-header -->
+				<div class="card-body">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>
+									Project
+								</th>
+								<th>
+									Priority
+								</th>
+								<th>
+									Status
+								</th>
+								<th>
+									Type
+								</th>
+								<th>
+									Submitter
+								</th>
+								<th>
+									Developer
+								</th>
+								<th>
+									Issue
+								</th>
+								<th>
+									Created
+								</th>
+								<th>
+									Updated
+								</th>
+								<th>
+									Resolved?
+								</th>
+								<th>
+									Archived?
+								</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var item in Model.Project.Tickets)
+							{
+								<tr>
+									<td>
+										@Html.DisplayFor(modelItem => item.Project.Name)
+									</td>
+									<td>
+										@Html.DisplayFor(modelItem => item.TicketPriority.Name)
+									</td>
+									<td>
+										@Html.DisplayFor(modelItem => item.TicketStatus.Name)
+									</td>
+									<td>
+										@Html.DisplayFor(modelItem => item.TicketType.Name)
+									</td>
+									<td>
+										@Html.DisplayFor(modelItem => item.Submitter.FullName)
+									</td>
+									<td>
+										@if (item.DeveloperId != null)
+										{
+											@Html.DisplayFor(modelItem => item.Developer.FullName)
+										}
+										else
+										{
+											<span>No Developer Assigned</span>
+										}
+									</td>
+									<td>
+										@Html.DisplayFor(modelItem => item.Issue)
+									</td>
+									<td>
+										@Html.DisplayFor(modelItem => item.Created)
+									</td>
+									<td>
+										@if (item.Updated != null)
+										{
+											@Html.DisplayFor(modelItem => item.Updated)
+										}
+										else
+										{
+											<p>No Updates</p>
+										}
+
+									</td>
+									<td>
+										@Html.DisplayFor(modelItem => item.IsResolved)
+									</td>
+									<td>
+										@Html.DisplayFor(modelItem => item.IsArchived)
+									</td>
+									<td>
+										@if (ticketHelper.CanViewDetails(item.Id))
+										{
+											@Html.ActionLink("Details", "Dashboard", "Tickets", new { id = item.Id }, null)
+										}
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+					<!-- /.row -->
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- /.container-fluid -->
+</div>
+<!-- /.content -->
+@if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+{
+	<div class="modal fade" id="modal-assigndevs">
+		<div class="modal-dialog">
+			<div class="modal-content bg-success">
+				<div class="modal-header">
+					<h4 class="modal-title">Assign Developers to @Model.Project.Name</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+
+				<div class="modal-body">
+					@{
+						ViewBag.DevIds = new MultiSelectList(roleHelper.UsersInRole("Developer"), "Id", "FullName");
+					}
+
+					@using (Html.BeginForm("ManageProjectDevs", "Assignments", new { projectId = Model.Project.Id }))
+					{
+						@Html.AntiForgeryToken()
+
+						<div class="row">
+							<div class="col-lg-6">
+								@Html.ListBox("DevIds", null, htmlAttributes: new { @class = "form-control" })
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-12 mt-2">
+								<button type="submit" class="btn btn-primary btn-Wide">Assign Users</button>
+							</div>
+						</div>
+					}
+
+
+
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="modal-assignsubs">
+		<div class="modal-dialog">
+			<div class="modal-content bg-success">
+				<div class="modal-header">
+					<h4 class="modal-title">Assign Submitters to @Model.Project.Name</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+
+				<div class="modal-body">
+					@{
+						ViewBag.SubIds = new MultiSelectList(roleHelper.UsersInRole("Submitter"), "Id", "FullName");
+					}
+
+					@using (Html.BeginForm("ManageProjectSubs", "Assignments", new { projectId = Model.Project.Id }))
+					{
+						@Html.AntiForgeryToken()
+
+						<div class="row">
+							<div class="col-lg-6">
+								@Html.ListBox("SubIds", null, htmlAttributes: new { @class = "form-control" })
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-12 mt-2">
+								<button type="submit" class="btn btn-primary btn-Wide">Assign Users</button>
+							</div>
+						</div>
+					}
+
+
+
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="modal-assignmanager">
+		<div class="modal-dialog">
+			<div class="modal-content bg-success">
+				<div class="modal-header">
+					<h4 class="modal-title">Assign Manager to @Model.Project.Name</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+
+				<div class="modal-body">
+					@{
+						ViewBag.ManagerId = new SelectList(roleHelper.UsersInRole("ProjectManager"), "Id", "FullName");
+
+					}
+
+					@using (Html.BeginForm("ManageProjectManager", "Assignments", new { projectId = Model.Project.Id }))
+					{
+						@Html.AntiForgeryToken()
+
+						<div class="row">
+							<div class="col-lg-6">
+								<h4>Select A Manager</h4>
+								@Html.DropDownList("ManagerId", null, htmlAttributes: new { @class = "form-control" })
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-12 mt-2">
+								<button type="submit" class="btn btn-primary btn-Wide">Assign Users</button>
+							</div>
+						</div>
+					}
+
+
+
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+@if (User.IsInRole("Admin") || User.IsInRole("ProjectManager"))
+{
+	<div class="modal fade" id="modal-editproject">
+		<div class="modal-dialog">
+			<div class="modal-content bg-success">
+				<div class="modal-header">
+					<h4 class="modal-title">Assign Developers to @Model.Project.Name</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+
+				<div class="modal-body">
+					@using (Html.BeginForm("Edit", "Projects", new { projectId = Model.Project.Id }))
+					{
+						@Html.AntiForgeryToken()
+
+						<div class="form-group">
+							@Html.Label("Name", htmlAttributes: new { @class = "control-label col-md-2" })
+							<div class="col-md-10">
+								@Html.EditorFor(model => model.Project.Name, new { htmlAttributes = new { @class = "form-control" } })
+							</div>
+						</div>
+
+						<div class="form-group">
+							@Html.Label("Details", htmlAttributes: new { @class = "control-label col-md-2" })
+							<div class="col-md-10">
+								@Html.EditorFor(model => model.Project.Details, new { htmlAttributes = new { @class = "form-control" } })
+							</div>
+						</div>
+
+						<div class="form-group">
+							@Html.Label("Archived?", htmlAttributes: new { @class = "control-label col-md-2" })
+							<div class="col-md-10">
+								@Html.EditorFor(model => model.Project.IsArchived, new { htmlAttributes = new { @class = "form-control" } })
+							</div>
+						</div>
+
+
+						<div class="form-group">
+							<div class="col-md-offset-2 col-md-10">
+								<input type="submit" value="Save" class="btn btn-default" />
+							</div>
+						</div>
+					}
+
+
+
+				</div>
+			</div>
+		</div>
+	</div>
+}
+@*@if (User.IsInRole("Submitter"))
+	{
+		using (Html.BeginForm("Create", "Tickets", FormMethod.Post))
+		{
+			@Html.AntiForgeryToken()
+
+			<div class="form-horizontal">
+				<h4>Ticket</h4>
+				<hr />
+				@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+				@Html.Hidden("ProjectId", Model.Id)
+
+				<div class="form-group">
+					@Html.Label("Ticket Priority", "TicketPriorityId", htmlAttributes: new { @class = "control-label col-md-2" })
+					<div class="col-md-10">
+						@Html.DropDownList("TicketPriorityId", null, htmlAttributes: new { @class = "form-control" })
+					</div>
+				</div>
+
+				<div class="form-group">
+					@Html.Label("Ticket Type", "TicketTypeId", htmlAttributes: new { @class = "control-label col-md-2" })
+					<div class="col-md-10">
+						@Html.DropDownList("TicketTypeId", null, htmlAttributes: new { @class = "form-control" })
+					</div>
+				</div>
+
+				<div class="form-group">
+					@Html.Label("Issue", htmlAttributes: new { @class = "control-label col-md-2" })
+					<div class="col-md-10">
+						@Html.Editor("Issue", new { htmlAttributes = new { @class = "form-control" } })
+
+					</div>
+				</div>
+
+				<div class="form-group">
+					@Html.Label("IssueDescription", htmlAttributes: new { @class = "control-label col-md-2" })
+					<div class="col-md-10">
+						@Html.TextArea("IssueDescription", new { htmlAttributes = new { @class = "form-control" } })
+					</div>
+				</div>
+
+				<div class="form-group">
+					<div class="col-md-offset-2 col-md-10">
+						<input type="submit" value="Create" class="btn btn-default" />
+					</div>
+				</div>
+			</div>
+		}
+
+
+		<hr />
+	}
+	<p>
+		@Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
+		@Html.ActionLink("Back to List", "List", "Projects")
+	</p>*@

@@ -8,10 +8,11 @@ using System.Web;
 
 namespace BugTracker.Utilities
 {
-    public class UserRoleHelper
+    public class RoleHelper
     {
         private UserManager<ApplicationUser> userManager = new UserManager<ApplicationUser>
         (new UserStore<ApplicationUser>(new ApplicationDbContext()));
+        private ApplicationDbContext db = new ApplicationDbContext();
 
         public bool IsUserInRole(string userId, string roleName)
         {
@@ -56,6 +57,18 @@ namespace BugTracker.Utilities
                 if (!IsUserInRole(user.Id, roleName))
                     resultList.Add(user);
             }
+            return resultList;
+        }
+
+        public ICollection<string> ListRoles()
+        {
+            var resultList = new List<string>();
+
+            foreach (var role in db.Roles)
+            {
+                resultList.Add(role.Name);
+            }
+
             return resultList;
         }
     }

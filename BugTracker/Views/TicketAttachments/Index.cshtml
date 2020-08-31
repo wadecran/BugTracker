@@ -1,57 +1,71 @@
 ﻿@model IEnumerable<BugTracker.Models.TicketAttachment>
 
 @{
-    ViewBag.Title = "Index";
+	ViewBag.Title = "Attachments";
 }
 
-<h2>Index</h2>
+<div class="content">
+	<br />
+	<div class="row">
+		<div class="col">
+			<div class="card card-default">
+				<div class="card-header">
+					<div class="card-title">
+						<h3 class="card-title">Delete Attachments</h3>
+					</div>
+				</div>
+				<div class="card-body">
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Ticket.SubmitterId)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.User.FirstName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.FilePath)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Description)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Created)
-        </th>
-        <th></th>
-    </tr>
+					<table class="table">
+						<thead>
+							<tr>
+								<th>
+									@Html.DisplayName("Submitter")
+								</th>
+								<th>
+									@Html.DisplayNameFor(model => model.User.FirstName)
+								</th>
+								<th>
+									@Html.DisplayNameFor(model => model.FilePath)
+								</th>
+								<th>
+									@Html.DisplayNameFor(model => model.Description)
+								</th>
+								<th>
+									@Html.DisplayNameFor(model => model.Created)
+								</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Ticket.SubmitterId)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.User.FirstName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.FilePath)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Description)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Created)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.Id }) |
-            @Html.ActionLink("Details", "Details", new { id=item.Id }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.Id })
-        </td>
-    </tr>
-}
-
-</table>
+							@foreach (var item in Model)
+							{
+								<tr>
+									<td>
+										@Html.DisplayFor(modelItem => item.Ticket.Submitter.FullName)
+									</td>
+									<td>
+										@Html.DisplayFor(modelItem => item.User.FirstName)
+									</td>
+									<td>
+										@Html.DisplayFor(modelItem => item.FilePath)
+									</td>
+									<td>
+										@Html.DisplayFor(modelItem => item.Description)
+									</td>
+									<td>
+										@Html.DisplayFor(modelItem => item.Created)
+									</td>
+									<td>
+										@Html.ActionLink("Delete", "Delete", new { id = item.Id })
+									</td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

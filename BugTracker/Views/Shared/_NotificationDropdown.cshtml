@@ -8,23 +8,23 @@
 <li class="nav-item dropdown">
 	<a class="nav-link" data-toggle="dropdown" href="#">
 		<i class="far fa-bell"></i>
-		@if (notifications.Count > 0)
+		@if (notifications.Where(n => n.IsRead == false).ToList().Count > 0)
 		{
-		<span class="badge badge-warning navbar-badge">@notifications.Count</span>
+		<span class="badge badge-warning navbar-badge">@notifications.Where(n => n.IsRead == false).ToList().Count</span>
 		}
 	</a>
 
 
 	<div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-		<span class="dropdown-header">@notifications.Count Notifications</span>
+		<span class="dropdown-header">@notifications.Where(n => n.IsRead == false).ToList().Count Notifications</span>
 		<div class="dropdown-divider"></div>
-		@foreach (var note in notifications.Take(5))
+		@foreach (var note in notifications.Where(n => n.IsRead == false).ToList().Take(5))
 		{
-			<a href="#" class="dropdown-item">
+			<a href="@Url.Action("Details", "TicketNotifications", new { id = note.Id })" class="dropdown-item">
 				<i class="fas fa-exclamation mr-2"></i> @note.Subject
 			</a>
 			<div class="dropdown-divider"></div>
 		}
-		<a href="@Url.Action("Index", "TicketNotification")" class="dropdown-item dropdown-footer">See All Notifications</a>
+		<a href="@Url.Action("Index", "TicketNotifications")" class="dropdown-item dropdown-footer">See All Notifications</a>
 	</div>
 </li>

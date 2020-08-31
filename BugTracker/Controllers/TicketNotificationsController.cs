@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Identity;
 using System.Data;
 using System.Data.Entity;
 using System.Linq;
@@ -7,18 +8,29 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using BugTracker.Models;
+using BugTracker.Utilities;
 
 namespace BugTracker.Controllers
 {
     public class TicketNotificationsController : Controller
     {
         private ApplicationDbContext db = new ApplicationDbContext();
+        public NotificationHelper notificationHelper = new NotificationHelper();
 
         // GET: TicketNotifications
         public ActionResult Index()
         {
-            var ticketNotifications = db.TicketNotifications.Include(t => t.Ticket).Include(t => t.User);
+            var userId = User.Identity.GetUserId();
+            var ticketNotifications = db.TicketNotifications.Where(n => n.UserId == userId);
             return View(ticketNotifications.ToList());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult MarkAsRead(int id)
+        {
+            notificationHelper.MarkAsRead(id);
+            return RedirectToAction("Index");
         }
 
         // GET: TicketNotifications/Details/5
